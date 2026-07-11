@@ -164,7 +164,7 @@ Gate D,30,80,4`;
           Synthetic Data Test Bed
         </h1>
         <p className="text-sm text-slate-400">
-          Upload custom CSV telemetry packets to stress-test Gemini's Explainable Decision engine.
+          Upload custom CSV telemetry packets to stress-test Gemini&apos;s Explainable Decision engine.
         </p>
       </div>
 

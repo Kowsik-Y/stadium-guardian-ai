@@ -35,6 +35,27 @@ export default function ClientShell({ children }: { children: React.ReactNode })
     setHasMounted(true);
   }, []);
 
+  // Register the Service Worker for offline-first PWA capability (stadium low-connectivity environments)
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      const isLocalhost =
+        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const isSecure = window.location.protocol === 'https:';
+      if (isSecure || isLocalhost) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker
+            .register('/sw.js')
+            .then((reg) => {
+              console.log('[SW] Registered, scope:', reg.scope);
+            })
+            .catch((err) => {
+              console.warn('[SW] Registration failed:', err);
+            });
+        });
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (!hasMounted) {
       return;

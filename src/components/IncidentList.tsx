@@ -105,7 +105,7 @@ const IncidentList: React.FC<IncidentListProps> = ({ activeIncidents, resolveInc
                       Volunteer Staff Script
                     </p>
                     <p className="text-xs italic bg-slate-950/30 p-2 rounded border border-slate-850/50 text-slate-350 mt-1 leading-snug">
-                      "{inc.message_for_volunteer}"
+                      &quot;{inc.message_for_volunteer}&quot;
                     </p>
                   </div>
 
@@ -115,7 +115,7 @@ const IncidentList: React.FC<IncidentListProps> = ({ activeIncidents, resolveInc
                         Fan Announcement
                       </p>
                       <p className="text-xs bg-slate-950/30 p-2 rounded border border-slate-850/50 text-emerald-400/90 mt-1 leading-snug">
-                        "{inc.broadcast_payload.fan_announcement}"
+                        &quot;{inc.broadcast_payload.fan_announcement}&quot;
                       </p>
                     </div>
                   )}

@@ -22,11 +22,11 @@ describe('Gemini singleton', () => {
   });
 
   it('initializes the Gemini model once per module load', async () => {
-    const module = await import('@/lib/gemini');
+    const geminiLib = await import('@/lib/gemini');
 
     expect(googleGenerativeAiMock).toHaveBeenCalledTimes(1);
     expect(getGenerativeModelMock).toHaveBeenCalledTimes(1);
-    expect(module.geminiModel).toEqual({ id: 'gemini-model' });
-    expect(module.geminiModel).toBe(module.geminiModel);
+    expect(geminiLib.geminiModel).toEqual({ id: 'gemini-model' });
+    expect(geminiLib.geminiModel).toBe(geminiLib.geminiModel);
   });
 });

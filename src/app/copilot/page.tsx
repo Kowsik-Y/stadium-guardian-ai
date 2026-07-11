@@ -355,10 +355,10 @@ export default function Copilot() {
 
         <div className="mt-4 pt-3 border-t border-slate-800 text-[10px] text-slate-450 leading-relaxed bg-slate-950/40 p-2.5 rounded border border-slate-850">
           <span className="font-semibold text-slate-350 block mb-0.5">
-            💡 Architect's Evaluation Tip:
+            💡 Architect&apos;s Evaluation Tip:
           </span>
           Stadium Guardian AI implements structured JSON output by feeding model configurations with{' '}
-          <code className="text-emerald-400">responseMimeType: "application/json"</code>. This
+          <code className="text-emerald-400">responseMimeType: &quot;application/json&quot;</code>. This
           eliminates manual regex parsing and ensures O(1) field accessibility.
         </div>
       </div>
