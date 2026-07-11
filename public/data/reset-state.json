@@ -1,0 +1,120 @@
+{
+  "gates": {
+    "Gate A": {
+      "gate": "Gate A",
+      "density": 40,
+      "arrival_rate": 100,
+      "wait_time": 5,
+      "capacity": 600,
+      "coordinates": { "x": 30, "y": 25 }
+    },
+    "Gate B": {
+      "gate": "Gate B",
+      "density": 60,
+      "arrival_rate": 200,
+      "wait_time": 10,
+      "capacity": 600,
+      "coordinates": { "x": 70, "y": 25 }
+    },
+    "Gate C": {
+      "gate": "Gate C",
+      "density": 45,
+      "arrival_rate": 150,
+      "wait_time": 6,
+      "capacity": 600,
+      "coordinates": { "x": 30, "y": 75 }
+    },
+    "Gate D": {
+      "gate": "Gate D",
+      "density": 35,
+      "arrival_rate": 120,
+      "wait_time": 4,
+      "capacity": 600,
+      "coordinates": { "x": 70, "y": 75 }
+    }
+  },
+  "bins": {
+    "B-101": {
+      "bin_id": "B-101",
+      "zone": "Gate A Concourses",
+      "fill_level": 42,
+      "adjacent_density": 40,
+      "assigned_crew": null
+    },
+    "B-102": {
+      "bin_id": "B-102",
+      "zone": "Gate B Concourses",
+      "fill_level": 65,
+      "adjacent_density": 60,
+      "assigned_crew": null
+    },
+    "B-103": {
+      "bin_id": "B-103",
+      "zone": "Gate C Concourse East",
+      "fill_level": 48,
+      "adjacent_density": 45,
+      "assigned_crew": null
+    },
+    "B-104": {
+      "bin_id": "B-104",
+      "zone": "Gate C Concourse West",
+      "fill_level": 30,
+      "adjacent_density": 45,
+      "assigned_crew": null
+    },
+    "B-201": {
+      "bin_id": "B-201",
+      "zone": "Gate D Concourses",
+      "fill_level": 20,
+      "adjacent_density": 35,
+      "assigned_crew": null
+    },
+    "B-211": {
+      "bin_id": "B-211",
+      "zone": "Gate F Turnstiles",
+      "fill_level": 35,
+      "adjacent_density": 40,
+      "assigned_crew": null
+    }
+  },
+  "concessions": {
+    "C-101": {
+      "concession_id": "C-101",
+      "name": "Corner Kick Burgers",
+      "zone": "Gate A Concourse",
+      "queue_length": 12,
+      "wait_time": 4,
+      "stock_level": 90,
+      "status": "OPEN"
+    },
+    "C-102": {
+      "concession_id": "C-102",
+      "name": "Touchdown Tacos",
+      "zone": "Gate B Concourse",
+      "queue_length": 45,
+      "wait_time": 15,
+      "stock_level": 80,
+      "status": "BUSY"
+    },
+    "C-103": {
+      "concession_id": "C-103",
+      "name": "World Cup Snacks",
+      "zone": "Gate C Concourse",
+      "queue_length": 75,
+      "wait_time": 25,
+      "stock_level": 40,
+      "status": "BUSY"
+    },
+    "C-104": {
+      "concession_id": "C-104",
+      "name": "Pitchside Pizza",
+      "zone": "Gate D Concourse",
+      "queue_length": 8,
+      "wait_time": 3,
+      "stock_level": 95,
+      "status": "OPEN"
+    }
+  },
+  "weather": "Hot & Clear (29\u00b0C)",
+  "nearby_medical_cases": 1
+}
