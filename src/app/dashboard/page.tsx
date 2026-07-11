@@ -5,8 +5,10 @@ import { useCallback, useState } from 'react';
 import ControlPanel from '@/components/ControlPanel';
 import IncidentList from '@/components/IncidentList';
 import MapWrapper from '@/components/MapWrapper';
+import { SafeModuleBoundary } from '@/components/SafeModuleBoundary';
 import TelemetryGrids from '@/components/TelemetryGrids';
 import { useApp } from '@/context/AppContext';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
 import type { StadiumState } from '@/lib/types';
 
 export default function Dashboard() {
@@ -19,67 +21,18 @@ export default function Dashboard() {
     'none' | 'crowd-spill' | 'concourse-b-bypass'
   >('none');
 
-  const activeIncidents = incidents.filter((inc) => inc.status === 'ACTIVE');
+  const {
+    avgDensity,
+    avgWaitTime,
+    maxBinFill,
+    calculatedRiskScore,
+    activeIncidents,
+    medicalIncidents,
+    redirectRoutes,
+  } = useDashboardStats(stadiumState, incidents);
 
-  // Redirection guides calculation
-  const redirectRoutes = activeIncidents
-    .map((inc) => {
-      const text =
-        `${inc.recommended_action} ${inc.problem} ${inc.message_for_volunteer}`.toLowerCase();
-      let from = '';
-      let to = '';
-
-      if (text.includes('gate c')) from = 'Gate C';
-      else if (text.includes('gate a')) from = 'Gate A';
-      else if (text.includes('gate b')) from = 'Gate B';
-      else if (text.includes('gate d')) from = 'Gate D';
-
-      if (text.includes('gate d') && from !== 'Gate D') to = 'Gate D';
-      else if (text.includes('gate b') && from !== 'Gate B') to = 'Gate B';
-      else if (text.includes('gate a') && from !== 'Gate A') to = 'Gate A';
-      else if (text.includes('gate c') && from !== 'Gate C') to = 'Gate C';
-
-      if (text.includes('moroccan') || text.includes('عباد')) {
-        from = 'Gate C';
-        to = 'Gate D';
-      }
-
-      if (from && to && from !== to) {
-        return { id: inc.id, from, to };
-      }
-      return null;
-    })
-    .filter(Boolean) as Array<{ id: string; from: string; to: string }>;
-
-  const medicalIncidents = activeIncidents.filter(
-    (inc) =>
-      inc.recommended_action.toLowerCase().includes('medical') ||
-      inc.problem.toLowerCase().includes('breathe') ||
-      inc.message_for_volunteer.toLowerCase().includes('medical'),
-  );
-
-  // Global statistics
   const gatesList = Object.values(stadiumState.gates);
   const binsList = Object.values(stadiumState.bins);
-
-  const avgDensity = Math.round(
-    gatesList.reduce((acc, g) => acc + g.density, 0) / (gatesList.length || 1),
-  );
-  const avgWaitTime = Math.round(
-    gatesList.reduce((acc, g) => acc + g.wait_time, 0) / (gatesList.length || 1),
-  );
-  const maxBinFill = Math.max(...binsList.map((b) => b.fill_level), 0);
-
-  // Risk Score Algorithm: combination of wait times, densities, medical cases, and full bins
-  const calculatedRiskScore = Math.min(
-    100,
-    Math.round(
-      avgDensity * 0.4 +
-        avgWaitTime * 2.5 +
-        stadiumState.nearby_medical_cases * 10 +
-        activeIncidents.filter((i) => i.incident_type === 'CRITICAL_EMERGENCY').length * 20,
-    ),
-  );
 
   // Scenario Injectors
   const injectCrowdSpike = useCallback(() => {
@@ -258,16 +211,30 @@ export default function Dashboard() {
 
       {/* Interactive Map & Tab Selection Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <MapWrapper
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          setSelectedGate={setSelectedGate}
-          wayfindingPreset={wayfindingPreset}
-          setWayfindingPreset={setWayfindingPreset}
-          stadiumState={stadiumState}
-          medicalIncidents={medicalIncidents}
-          redirectRoutes={redirectRoutes}
-        />
+        <SafeModuleBoundary
+          fallback={
+            <div className="col-span-1 lg:col-span-2 bg-slate-900 border border-red-500/30 rounded-xl p-6 flex flex-col items-center justify-center min-h-[300px] text-center">
+              <p className="text-red-400 font-semibold mb-2">
+                Map Interface Temporarily Unavailable
+              </p>
+              <p className="text-xs text-slate-500">
+                A runtime telemetry error occurred in this module. Other system services remain
+                active.
+              </p>
+            </div>
+          }
+        >
+          <MapWrapper
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            setSelectedGate={setSelectedGate}
+            wayfindingPreset={wayfindingPreset}
+            setWayfindingPreset={setWayfindingPreset}
+            stadiumState={stadiumState}
+            medicalIncidents={medicalIncidents}
+            redirectRoutes={redirectRoutes}
+          />
+        </SafeModuleBoundary>
 
         {/* Sidebar Gate Details Overlay */}
         <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 backdrop-blur-md flex flex-col h-100">

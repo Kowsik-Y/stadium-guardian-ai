@@ -1,5 +1,4 @@
-'use client';
-
+import { memo } from 'react';
 import { getDensityColor } from '@/lib/mapVisuals';
 
 interface GateMarkerProps {
@@ -14,7 +13,7 @@ interface GateMarkerProps {
   onSelect: (gate: string) => void;
 }
 
-export function GateMarker({
+export const GateMarker = memo(function GateMarker({
   id,
   cx,
   cy,
@@ -48,4 +47,4 @@ export function GateMarker({
       </text>
     </g>
   );
-}
+});

@@ -1,5 +1,4 @@
-'use client';
-
+import { memo } from 'react';
 import { getDensityColor } from '@/lib/mapVisuals';
 
 interface BinMarkerProps {
@@ -10,7 +9,7 @@ interface BinMarkerProps {
   isSelected?: boolean;
 }
 
-export function BinMarker({ x, y, fillLevel = 0 }: BinMarkerProps) {
+export const BinMarker = memo(function BinMarker({ x, y, fillLevel = 0 }: BinMarkerProps) {
   return (
     <g>
       <rect
@@ -35,4 +34,4 @@ export function BinMarker({ x, y, fillLevel = 0 }: BinMarkerProps) {
       </text>
     </g>
   );
-}
+});

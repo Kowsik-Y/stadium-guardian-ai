@@ -1,4 +1,4 @@
-'use client';
+import { memo } from 'react';
 
 interface ConcessionMarkerProps {
   id: string;
@@ -10,7 +10,11 @@ interface ConcessionMarkerProps {
   isSelected?: boolean;
 }
 
-export function ConcessionMarker({ cx, cy, fill }: ConcessionMarkerProps) {
+export const ConcessionMarker = memo(function ConcessionMarker({
+  cx,
+  cy,
+  fill,
+}: ConcessionMarkerProps) {
   return (
     <g>
       <circle cx={cx} cy={cy} r="2.5" fill={fill} stroke="#0f172a" strokeWidth="0.5" />
@@ -19,4 +23,4 @@ export function ConcessionMarker({ cx, cy, fill }: ConcessionMarkerProps) {
       </text>
     </g>
   );
-}
+});

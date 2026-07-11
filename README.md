@@ -13,6 +13,35 @@
 
 Stadium Guardian AI (EcoFlow) is a production-ready, full-stack stadium operations assistant designed for volunteers and tournament operations control rooms at mega-stadium events (such as the FIFA World Cup 2026). It treats a 90,000-person stadium as a "temporary city" and utilizes Generative AI to provide explainable decision-making during high-density scenarios.
 
+## Chosen Vertical
+
+**Smart Stadiums & Tournament Operations**
+
+This project targets Challenge 4 (Smart Stadiums & Tournament Operations) for mega-stadium sports tournaments (such as the FIFA World Cup 2026). It manages a high-occupancy 90,000-spectator venue as a dynamic temporary city, orchestrating crowd safety, local sustainability, emergency escalation, and volunteer guidance.
+
+## Approach and Logic
+
+The architecture is designed around a reactive feedback and control loop:
+1. **Telemetry Streaming**: Gates (density, arrival rates, queue wait times), smart trash bins (fill levels, assigned crews), and concession stands (inventory levels, queue pressure) stream real-time operational indicators.
+2. **Deterministic & GenAI Dual Cascade**:
+   - For low latency and safety-critical fallback, the system uses a heuristic cascade (src/lib/mockCopilot.ts) to immediately map signals (e.g. medical distress words, Moroccan Arabic crowd crush indicators) to operations responses.
+   - When API connectivity is active, the system forwards telemetry payloads to the server-side Gemini 1.5 Flash API (/api/reasoning), which runs predictive reasoning models to forecast congestions or sanitation overflows.
+3. **Explainable AI (XAI)**: Predictions are required to output structured JSON including plain-English predictive reasoning. This makes the decision-making transparent, so command-room supervisors can understand why resource dispatches or gate closures are advised.
+
+## How the Solution Works
+
+- **Live Interactive HUD Map**: Renders an interactive SVG visual of Gates, Smart Bins, and Concessions. Color-coded states update dynamically using a simulation loop or live database streams.
+- **Multilingual Volunteer Copilot**: A real-time chat interface that processes messages submitted by field volunteers. It detects dialects (e.g. Moroccan Arabic dialect registers like "عباد بزاف"), translates queries into English, Spanish, French, and Arabic, and suggests step-by-step actions.
+- **Emergency Escalator**: Detects high-priority keywords (e.g., breathing distress) to instantly raise the incident category to CRITICAL_EMERGENCY, prioritizing EMT routing.
+- **Sustainability and Waste Optimization**: Employs bin-fullness telemetry to dispatch sanitation crews (CREW-DELTA) proactively before halftime or peak exit intervals.
+- **CSV Scenario Injector (Test Bed)**: Evaluators can upload customized CSV sensor data tables to test the routing AI and force system scenarios (e.g., crowd spikes).
+
+## Assumptions Made
+
+1. **Network Connectivity**: In a mega-stadium with 90,000 attendees, cellular networks are heavily congested. The application assumes low-bandwidth or offline scenarios, employing a progressive web app (PWA) with Service Worker caching and falling back to client-side LocalStorage sandboxing when Firestore or API routes are unreachable.
+2. **Sensor Frequency**: Telemetry update cycles are assumed to occur at a 5-second frequency, balancing live operational responsiveness with database write quotas and network overhead.
+3. **Roles & Scope**: Ground-level volunteers require direct, translated action scripts, while control room supervisors need the global dashboard, risk metrics, and deep explainable AI (XAI) rationale behind dispatches.
+
 ---
 
 ## Problem Statement
