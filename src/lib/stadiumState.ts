@@ -179,6 +179,11 @@ export const INITIAL_INCIDENTS: Incident[] = [
   },
 ];
 
+/**
+ * Returns the canonical initial StadiumState used on first load and in
+ * sandbox simulation mode. All gate, bin, and concession records reflect
+ * a realistic FIFA World Cup 2026 pre-match scenario.
+ */
 export function getInitialStadiumState(): StadiumState {
   return {
     gates: INITIAL_GATES,
@@ -189,8 +194,17 @@ export function getInitialStadiumState(): StadiumState {
   };
 }
 
-// O(1) Map-based search optimization
-// Finding a Gate using direct hash-index lookup
+/**
+ * O(1) lookup for a gate by name or letter abbreviation.
+ *
+ * Accepts both the full canonical key (`"Gate C"`) and bare letter variants
+ * (`"C"`, `"GATE C"`) to handle the variety of formats that arrive from
+ * Gemini responses and CSV uploads.
+ *
+ * @param gates - Current gates telemetry map keyed by gate name.
+ * @param gateId - Gate identifier in any supported format.
+ * @returns The GateTelemetry record or null when not found.
+ */
 export function lookupGate(
   gates: Record<string, GateTelemetry>,
   gateId: string,
@@ -215,7 +229,16 @@ export function lookupGate(
   return null;
 }
 
-// O(1) Lookup for trash bins
+/**
+ * O(1) lookup for a smart trash bin by its canonical ID (e.g. `"B-103"`).
+ *
+ * The bin ID is upper-cased before lookup so that inputs from volunteers
+ * (`"b-103"`) match the index keys without a linear scan.
+ *
+ * @param bins - Current bins telemetry map keyed by bin ID.
+ * @param binId - Bin identifier, case-insensitive.
+ * @returns The SmartBinTelemetry record or null when not found.
+ */
 export function lookupBin(
   bins: Record<string, SmartBinTelemetry>,
   binId: string,
@@ -227,7 +250,13 @@ export function lookupBin(
   return null;
 }
 
-// O(1) Lookup for concessions
+/**
+ * O(1) lookup for a concession stand by its canonical ID (e.g. `"C-101"`).
+ *
+ * @param concessions - Current concessions map keyed by concession ID.
+ * @param id - Concession identifier, case-insensitive.
+ * @returns The ConcessionTelemetry record or null when not found.
+ */
 export function lookupConcession(
   concessions: Record<string, ConcessionTelemetry>,
   id: string,

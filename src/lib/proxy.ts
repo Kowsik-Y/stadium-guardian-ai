@@ -11,16 +11,27 @@ export interface ProxyContext {
 type RouteHandler = (req: Request, context: ProxyContext) => Promise<Response> | Response;
 
 /**
- * Higher-Order Function to wrap API handlers with unified security logging,
- * exception tracking, and performance timing.
+ * Higher-Order Function (HOF) that wraps Next.js API route handlers with:
+ *
+ * 1. **Payload safety** — Rejects requests with unsupported Content-Types or
+ *    bodies exceeding 100 KB, preventing abuse of the Gemini API endpoints.
+ * 2. **Sandbox token authentication** — Resolves Bearer tokens against
+ *    environment-variable secrets so automated tests and demo evaluators can
+ *    call the API without a live Firebase session.
+ * 3. **Structured error handling** — Catches unhandled exceptions from the
+ *    inner handler and returns a consistent JSON error envelope with a 500
+ *    status, ensuring the client always gets a parseable response.
+ * 4. **Response-time header** — Attaches `X-Response-Time` to successful
+ *    responses for transparent performance monitoring.
+ *
+ * @param handler - The route handler to wrap.
+ * @returns An async function compatible with Next.js `export const POST = ...` syntax.
  */
 export function withRouteProxy(handler: RouteHandler) {
   return async (req: Request) => {
     const startTime = Date.now();
     const url = new URL(req.url);
     const apiPath = url.pathname;
-
-    console.log(`[API PROXY] Request started: ${req.method} ${apiPath}`);
 
     // --- SECURITY: Server-side content-type & payload size boundaries ---
     if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
@@ -90,10 +101,9 @@ export function withRouteProxy(handler: RouteHandler) {
       // Execute target API Route handler
       const response = await handler(req, context);
 
+      // Expose duration header for monitoring without polluting stdout
       const duration = Date.now() - startTime;
-      console.log(
-        `[API PROXY] Request completed: ${req.method} ${apiPath} in ${duration}ms (status: ${response.status})`,
-      );
+      response.headers?.set?.('X-Response-Time', `${duration}ms`);
 
       return response;
     } catch (error: unknown) {

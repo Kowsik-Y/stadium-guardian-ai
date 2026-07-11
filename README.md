@@ -83,15 +83,34 @@ src/
 │   ├── ClientShell.tsx         # Sidebar, weather banner, alert count widget
 │   └── Login.tsx               # Quick-access volunteer profiles login
 ├── context/
-│   └── AppContext.tsx          # Global context: auth, sensors sync, simulated data drift
+│   └── AppContext.tsx          # Global context composer — composes all hooks
+├── hooks/
+│   ├── useAuth.ts              # Authentication state, login/logout handlers
+│   ├── useFirestoreSync.ts     # Firestore/LocalStorage sync, incident CRUD
+│   ├── useSimulation.ts        # Real-time sensor drift simulation loop
+│   └── useAiReasoning.ts       # Proactive Gemini reasoning engine integration
 └── lib/
-    ├── db.ts / firebase.ts     # Firebase App/Auth/Firestore init scripts
+    ├── firebase.ts             # Firebase App/Auth/Firestore init scripts
+    ├── firestoreSync.ts        # Atomic batch write helpers for Firestore
+    ├── focusTrap.ts            # WCAG 2.1 keyboard focus trap utility
+    ├── gemini.ts               # Gemini model singleton
+    ├── mockCopilot.ts          # Deterministic sandbox fallback for AI Copilot
+    ├── proxy.ts                # API route HOF: security, auth, error handling
     ├── types.ts                # Strict TypeScript model interfaces
     └── stadiumState.ts         # Preset lookups, default states, O(1) map searches
 public/
 ├── icon-192.png                # Mascot maskable PWA icon
 ├── icon-512.png                # PWA splash screen icon
 └── sw.js                       # Service Worker for offline static caching
+tests/
+├── copilot-translation.test.ts # AI Copilot dialect & emergency classification
+├── firestore-sync.test.ts      # Firestore batch write helpers
+├── focus-trap.test.ts          # WCAG keyboard focus trap utility
+├── gemini-singleton.test.ts    # Gemini SDK singleton initialization
+├── mock-copilot-edge-cases.test.ts  # Edge cases: empty input, long input, mixed language
+├── proxy.test.ts               # API proxy HOF: security, auth, error handling
+├── simulation-tick.test.ts     # Simulation tick: density clamping, bin fill, concessions
+└── stadium-state.test.ts       # Stadium state lookups and O(1) search helpers
 ```
 
 ---
@@ -160,3 +179,58 @@ gcloud run deploy stadium-guardian-ai \
     --allow-unauthenticated \
     --region us-central1
 ```
+
+---
+
+## 🎯 How This Addresses the Problem Statement
+
+This section explicitly maps each **Challenge 4: Smart Stadiums & Tournament Operations** requirement to a concrete implementation:
+
+| Challenge Requirement | Implementation |
+|---|---|
+| **Real-time crowd monitoring & management** | Live SVG HUD map with gate density %, wait times, and arrival rates updated every 5 s via simulated sensor drift. `src/hooks/useSimulation.ts` |
+| **AI-driven decision support** | Gemini 1.5 Flash API called server-side via `/api/reasoning` with full telemetry context. Returns structured JSON with `incident_type`, `predictive_reasoning`, and `action_plan`. `src/app/api/reasoning/route.ts` |
+| **Multilingual communication for international fans** | Copilot generates volunteer scripts and fan announcements in English, Spanish, French, and Arabic (including Moroccan dialect). `src/app/api/copilot/route.ts` |
+| **Explainable AI (XAI) reasoning** | Every AI response includes a `predictive_reasoning` field with plain-English explanation of *why* an action is recommended. Displayed side-by-side with actions in the UI. |
+| **Emergency escalation & response** | Three-tier incident classification: `ROUTINE` → `URGENT` → `CRITICAL_EMERGENCY`. Medical keywords and crowd-crush dialect markers trigger immediate CRITICAL_EMERGENCY dispatch with EMT routing. `src/lib/mockCopilot.ts` |
+| **Sustainability & smart waste management** | Smart Bin telemetry tracks fill levels per concourse. Bins filling above 85% with no assigned crew proactively trigger Gemini AI to dispatch `CREW-DELTA` sanitation teams before overflow. |
+| **Volunteer support tooling** | Volunteer AI Copilot provides direct ground-level instructions, multilingual fan scripts, and contextual situational awareness — replacing paper playbooks. |
+| **Data ingestion & custom scenarios** | CSV Test Bed (`/upload`) accepts drag-and-drop sensor files with header validation, overriding live telemetry to simulate arbitrary scenarios for evaluation and training. |
+| **Offline / low-connectivity operation** | PWA with Service Worker caching critical assets. All telemetry falls back to LocalStorage when Firebase is unavailable, ensuring no single point of failure in stadium network conditions. |
+| **Performance at scale** | Firebase Firestore with O(1) hash-map lookups (`lookupGate`, `lookupBin`, `lookupConcession`). Batch writes throttled to every ~30 s to handle 90,000-person stadium throughput. |
+
+---
+
+## 🧠 Context-Aware AI Decision Making
+
+The AI reasoning engine adapts its responses based on multiple simultaneous contextual signals — it is **not** a static rule engine:
+
+| Context Signal | How AI Uses It |
+|---|---|
+| **Gate crowd density (0–100%)** | Density > 80% → `URGENT` dispatch. Density > 80% + high arrival rate → `CRITICAL_EMERGENCY` crowd crush risk. Redirects fans to lowest-density gate. |
+| **Stadium capacity & arrival rate** | Combines gate density with fans/min arrival to calculate bottleneck timeline (e.g. "will exceed safe capacity in 4 minutes"). |
+| **Weather conditions** | Hot conditions (> 29°C) combined with high density triggers hydration station deployment and heat-stroke risk escalation. |
+| **Time-of-event phase** | Bin fill rates and concession queues are weighted against halftime approach — AI proactively dispatches crews *before* the halftime rush, not after. |
+| **Smart bin fill levels** | Bins > 85% full with unassigned crews → proactive dispatch. Bins with active crews → tracks drain progress tick-by-tick. |
+| **Medical case count** | `nearby_medical_cases > 3` → immediate `CRITICAL_EMERGENCY` with Medical Response Unit Alpha and triage area setup. |
+| **Volunteer input dialect** | Moroccan Arabic (`عباد بزاف`, `مخنق`) → CRITICAL_EMERGENCY crowd crush. Spanish confusion → URGENT redirect. English routine queries → ROUTINE navigation. |
+| **Concession stock levels** | Stock < 15% auto-restock trigger. Queue > 40 → BUSY status + crew dispatch to open reserve counters. |
+
+All of these signals are passed as a single telemetry JSON packet to Gemini with each reasoning request, enabling **multi-signal correlated decisions** rather than single-dimension rule matching.
+
+---
+
+## 🧪 Test Coverage Summary
+
+**47 tests across 8 test files** — run with `npm test` or `npm run test:coverage` for a full HTML coverage report.
+
+| Test File | What's Covered |
+|---|---|
+| `stadium-state.test.ts` | Initial state structure, O(1) gate/bin/concession lookups, null returns for missing IDs |
+| `copilot-translation.test.ts` | Moroccan Arabic crowd crisis detection, medical emergency escalation, bin overflow routing, restroom queries, standard fallback |
+| `mock-copilot-edge-cases.test.ts` | Empty input, 500+ char input, whitespace-only, case-insensitive matching, all four translation keys always present, action_plan shape, priority ordering (medical beats sustainability) |
+| `simulation-tick.test.ts` | Gate density clamping (max 98%, min 10%), arrival rate floor (20/min), wait-time formula at boundaries, bin fill progression, crew drain to zero & crew release, fill-rate vs density correlation, concession OPEN/BUSY/CLOSED thresholds |
+| `proxy.test.ts` | Request passthrough, unhandled exception → 500 envelope, volunteer Bearer token auth, supervisor Bearer token auth, missing env secret → unauthenticated |
+| `firestore-sync.test.ts` | Single atomic batch write for full stadium state, correct document path construction, collection seeding |
+| `focus-trap.test.ts` | Focusable element enumeration in DOM order, Tab wrapping last → first, Shift-Tab wrapping first → last |
+| `gemini-singleton.test.ts` | SDK initialized once per module load, model instance reference stability |

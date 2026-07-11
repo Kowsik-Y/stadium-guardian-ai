@@ -43,14 +43,9 @@ export default function ClientShell({ children }: { children: React.ReactNode })
       const isSecure = window.location.protocol === 'https:';
       if (isSecure || isLocalhost) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker
-            .register('/sw.js')
-            .then((reg) => {
-              console.log('[SW] Registered, scope:', reg.scope);
-            })
-            .catch((err) => {
-              console.warn('[SW] Registration failed:', err);
-            });
+          navigator.serviceWorker.register('/sw.js').catch((err) => {
+            console.warn('[SW] Registration failed:', err);
+          });
         });
       }
     }
@@ -235,25 +230,27 @@ export default function ClientShell({ children }: { children: React.ReactNode })
 
           {/* Right Header Controls */}
           <div className="flex items-center gap-4">
-            {/* Incidents Notification Icon */}
+            {/* Incidents Notification — semantic button for keyboard/screen-reader accessibility */}
             {activeIncidents.length > 0 && (
-              <div
+              <button
+                type="button"
                 onClick={() => router.push('/dashboard#incidents-panel')}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full cursor-pointer transition-all duration-300 ${
+                aria-label={`${activeIncidents.length} active incident${activeIncidents.length > 1 ? 's' : ''}${criticalCount > 0 ? ` — ${criticalCount} critical` : ''}. Click to view on dashboard.`}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full cursor-pointer transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
                   criticalCount > 0
-                    ? 'bg-red-500/20 border border-red-500/30 text-red-400 animate-pulse'
-                    : 'bg-amber-500/20 border border-amber-500/30 text-amber-400'
+                    ? 'bg-red-500/20 border border-red-500/30 text-red-400 animate-pulse focus-visible:ring-red-500'
+                    : 'bg-amber-500/20 border border-amber-500/30 text-amber-400 focus-visible:ring-amber-500'
                 }`}
               >
                 {criticalCount > 0 ? (
-                  <Flame className="h-4 w-4" />
+                  <Flame className="h-4 w-4" aria-hidden="true" />
                 ) : (
-                  <AlertCircle className="h-4 w-4" />
+                  <AlertCircle className="h-4 w-4" aria-hidden="true" />
                 )}
                 <span className="font-semibold">
                   {activeIncidents.length} Active Incident{activeIncidents.length > 1 ? 's' : ''}
                 </span>
-              </div>
+              </button>
             )}
 
             {/* Volunteer Location assignment */}

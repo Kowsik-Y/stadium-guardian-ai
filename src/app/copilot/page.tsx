@@ -358,8 +358,8 @@ export default function Copilot() {
             💡 Architect&apos;s Evaluation Tip:
           </span>
           Stadium Guardian AI implements structured JSON output by feeding model configurations with{' '}
-          <code className="text-emerald-400">responseMimeType: &quot;application/json&quot;</code>. This
-          eliminates manual regex parsing and ensures O(1) field accessibility.
+          <code className="text-emerald-400">responseMimeType: &quot;application/json&quot;</code>.
+          This eliminates manual regex parsing and ensures O(1) field accessibility.
         </div>
       </div>
     </div>

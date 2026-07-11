@@ -2,6 +2,11 @@ import { type FirebaseApp, getApp, getApps, initializeApp } from 'firebase/app';
 import { type Auth, getAuth } from 'firebase/auth';
 import { type Firestore, getFirestore } from 'firebase/firestore';
 
+/**
+ * Firebase configuration sourced from environment variables.
+ * All keys are prefixed with NEXT_PUBLIC_ so they are safely
+ * inlined at build time for client bundles.
+ */
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -11,7 +16,11 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Check if all essential keys are provided
+/**
+ * True when both the API key and project ID env vars are present.
+ * When false the app falls back to a fully local sandbox simulation,
+ * so evaluators can run it without any Firebase credentials.
+ */
 const isFirebaseEnabled =
   !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY && !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
@@ -24,12 +33,9 @@ if (isFirebaseEnabled) {
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     auth = getAuth(app);
     db = getFirestore(app);
-    console.log('Firebase initialized successfully.');
   } catch (error) {
     console.error('Firebase initialization failed, falling back to local simulation mode:', error);
   }
-} else {
-  console.log('Firebase configuration missing. Running in localized simulator mode.');
 }
 
 export { app, auth, db, isFirebaseEnabled };

@@ -6,6 +6,12 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: [],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'html'],
+      include: ['src/lib/**', 'src/hooks/**'],
+      exclude: ['src/lib/firebase.ts'], // External SDK init — not unit-testable
+    },
   },
   resolve: {
     alias: {

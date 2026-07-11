@@ -1,5 +1,26 @@
 import { STADIUM_ZONES } from './types';
 
+/**
+ * Deterministic heuristic fallback for the AI Copilot used when the
+ * Gemini API key is absent (sandbox / evaluation mode).
+ *
+ * Processes free-text volunteer input through a priority-ordered cascade:
+ * 1. Medical emergency keywords (highest priority — immediate CRITICAL_EMERGENCY)
+ * 2. Moroccan Arabic dialect crowd-crush markers
+ * 3. Spanish-language crowd confusion near Gate C
+ * 4. Smart bin overflow reports (extracts bin ID via regex)
+ * 4.5. Concession / food-stock restock queries
+ * 5. Standard restroom / navigation queries
+ * 6. Default fallback: ROUTINE / STANDARD for everything else
+ *
+ * Each branch returns a fully structured response matching the Gemini JSON
+ * schema so the UI renders identically whether it is using live AI or this
+ * sandbox stub.
+ *
+ * @param inputText - The raw volunteer text message to classify.
+ * @returns A structured copilot response object with incident_type, priority,
+ *   reasoning, action_plan, translations, and message_for_volunteer.
+ */
 export function generateMockCopilot(inputText: string) {
   const query = inputText.toLowerCase().trim();
 

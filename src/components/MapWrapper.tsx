@@ -103,7 +103,12 @@ const MapWrapper: React.FC<MapWrapperProps> = ({
       <div className="flex-1 relative bg-slate-950 flex items-center justify-center overflow-hidden">
         {activeTab === 'stadium' ? (
           <div className="relative w-full h-full max-w-[500px] max-h-[340px] flex items-center justify-center">
-            <svg viewBox="0 0 100 100" className="w-4/5 h-4/5 text-slate-800">
+            <svg
+              viewBox="0 0 100 100"
+              className="w-4/5 h-4/5 text-slate-800"
+              role="img"
+              aria-label="Stadium map HUD showing live gate density, smart bin fill levels, and crowd flow overlays"
+            >
               <rect
                 x="5"
                 y="5"
@@ -156,7 +161,7 @@ const MapWrapper: React.FC<MapWrapperProps> = ({
                 strokeOpacity="0.3"
               />
 
-              {/* Gate nodes */}
+              {/* Gate nodes — each is keyboard-focusable with an accessible title and status label */}
               <circle
                 cx="30"
                 cy="25"
@@ -170,7 +175,13 @@ const MapWrapper: React.FC<MapWrapperProps> = ({
                 }
                 className="cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => setSelectedGate('Gate A')}
-              />
+                role="button"
+                tabIndex={0}
+                aria-label={`Gate A — density ${stadiumState.gates['Gate A']?.density ?? 0}%, wait ${stadiumState.gates['Gate A']?.wait_time ?? 0} min`}
+                onKeyDown={(e) => e.key === 'Enter' && setSelectedGate('Gate A')}
+              >
+                <title>Gate A — {stadiumState.gates['Gate A']?.density ?? 0}% density</title>
+              </circle>
               <circle
                 cx="70"
                 cy="25"
@@ -184,7 +195,13 @@ const MapWrapper: React.FC<MapWrapperProps> = ({
                 }
                 className="cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => setSelectedGate('Gate B')}
-              />
+                role="button"
+                tabIndex={0}
+                aria-label={`Gate B — density ${stadiumState.gates['Gate B']?.density ?? 0}%, wait ${stadiumState.gates['Gate B']?.wait_time ?? 0} min`}
+                onKeyDown={(e) => e.key === 'Enter' && setSelectedGate('Gate B')}
+              >
+                <title>Gate B — {stadiumState.gates['Gate B']?.density ?? 0}% density</title>
+              </circle>
               <circle
                 cx="30"
                 cy="75"
@@ -198,7 +215,13 @@ const MapWrapper: React.FC<MapWrapperProps> = ({
                 }
                 className="cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => setSelectedGate('Gate C')}
-              />
+                role="button"
+                tabIndex={0}
+                aria-label={`Gate C — density ${stadiumState.gates['Gate C']?.density ?? 0}%, wait ${stadiumState.gates['Gate C']?.wait_time ?? 0} min`}
+                onKeyDown={(e) => e.key === 'Enter' && setSelectedGate('Gate C')}
+              >
+                <title>Gate C — {stadiumState.gates['Gate C']?.density ?? 0}% density</title>
+              </circle>
               <circle
                 cx="70"
                 cy="75"
@@ -212,7 +235,13 @@ const MapWrapper: React.FC<MapWrapperProps> = ({
                 }
                 className="cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => setSelectedGate('Gate D')}
-              />
+                role="button"
+                tabIndex={0}
+                aria-label={`Gate D — density ${stadiumState.gates['Gate D']?.density ?? 0}%, wait ${stadiumState.gates['Gate D']?.wait_time ?? 0} min`}
+                onKeyDown={(e) => e.key === 'Enter' && setSelectedGate('Gate D')}
+              >
+                <title>Gate D — {stadiumState.gates['Gate D']?.density ?? 0}% density</title>
+              </circle>
 
               <text x="30" y="17" fill="#94a3b8" fontSize="3" fontWeight="bold" textAnchor="middle">
                 Gate A
