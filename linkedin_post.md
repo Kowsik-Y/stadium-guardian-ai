@@ -17,7 +17,7 @@ Instead of building a shallow "Swiss Army Knife" app, we selected **Ground Volun
 
 ## 🏗️ Architectural Strategy & Stack
 
-- **Framework**: Next.js 16 (App Router + Turbopack) for sub-100ms client hot-reloading.
+- **Framework**: Next.js 15 (App Router + Turbopack) for sub-100ms client hot-reloading.
 - **Database/Sync**: Realtime Firebase Firestore database for live sensor telemetry syncing, falling back to a client-side localStorage state engine if credentials are omitted.
 - **AI Core**: Google Gemini API via the `@google/generative-ai` SDK.
 - **Charts & Visuals**: Recharts responsive grids mapping crowd relief rates, alerts status, and model confidence trends.
