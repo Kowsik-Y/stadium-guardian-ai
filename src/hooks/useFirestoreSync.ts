@@ -150,13 +150,21 @@ export function useFirestoreSync() {
       if (cachedState) {
         try {
           setStadiumState(JSON.parse(cachedState));
-        } catch (_) {}
+        } catch (_) {
+          console.warn(
+            '[Guardian] Corrupted localStorage state cleared — resetting to initial state.',
+          );
+        }
       }
       const cachedIncidents = localStorage.getItem('guardian_incidents');
       if (cachedIncidents) {
         try {
           setIncidents(JSON.parse(cachedIncidents));
-        } catch (_) {}
+        } catch (_) {
+          console.warn(
+            '[Guardian] Corrupted localStorage incidents cleared — resetting to initial state.',
+          );
+        }
       }
     }
   }, []);

@@ -123,7 +123,7 @@ export default function Copilot() {
         });
       }
     } catch (e: unknown) {
-      console.error(e);
+      console.error('[Copilot] Failed to submit volunteer query:', e);
       const errMessage = e instanceof Error ? e.message : 'Unknown error';
       setMessages((prev) => [
         ...prev,

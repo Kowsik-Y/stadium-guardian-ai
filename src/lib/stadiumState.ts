@@ -265,3 +265,13 @@ export function lookupConcession(
   if (concessions[cleanId]) return concessions[cleanId];
   return null;
 }
+/**
+ * Helper to derive the associated main Gate key from any given zone string.
+ * This ensures DRY derivation for mapping bins or concessions back to their parent gate.
+ */
+export function zoneToGateKey(zone: string): string {
+  if (zone.includes('Gate A')) return 'Gate A';
+  if (zone.includes('Gate B')) return 'Gate B';
+  if (zone.includes('Gate C')) return 'Gate C';
+  return 'Gate D';
+}

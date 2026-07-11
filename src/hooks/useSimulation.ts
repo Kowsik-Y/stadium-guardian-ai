@@ -1,7 +1,23 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { zoneToGateKey } from '@/lib/stadiumState';
 import type { StadiumState } from '@/lib/types';
+
+const SIMULATION = {
+  DENSITY_MAX: 98,
+  DENSITY_MIN: 10,
+  ARRIVAL_RATE_MIN: 20,
+  WAIT_TIME_DIVISOR: 150,
+  BIN_FILL_DENSITY_DIVISOR: 30,
+  BIN_CREW_DRAIN_MIN: 15,
+  QUEUE_MAX: 120,
+  QUEUE_BUSY_THRESHOLD: 40,
+  WAIT_SECONDS_PER_FAN: 0.35,
+  STOCK_RESTOCK_THRESHOLD: 15,
+  STOCK_RESTOCKED_LEVEL: 95,
+  TICK_INTERVAL_MS: 5000,
+} as const;
 
 /**
  * Drives the real-time stadium telemetry simulation loop.
@@ -33,13 +49,19 @@ export function useSimulation(setStadiumState: React.Dispatch<React.SetStateActi
       Object.keys(nextGates).forEach((gateName) => {
         const g = nextGates[gateName];
         const delta = Math.floor(Math.random() * 5) - 2; // −2 to +2
-        const density = Math.max(10, Math.min(98, g.density + delta));
+        const density = Math.max(
+          SIMULATION.DENSITY_MIN,
+          Math.min(SIMULATION.DENSITY_MAX, g.density + delta),
+        );
 
         const rateDelta = Math.floor(Math.random() * 20) - 10;
-        const arrival_rate = Math.max(20, g.arrival_rate + rateDelta);
+        const arrival_rate = Math.max(SIMULATION.ARRIVAL_RATE_MIN, g.arrival_rate + rateDelta);
 
         // Wait time grows non-linearly: high density + high rate = backlog
-        const wait_time = Math.max(2, Math.floor((density / 10) * (arrival_rate / 150)));
+        const wait_time = Math.max(
+          2,
+          Math.floor((density / 10) * (arrival_rate / SIMULATION.WAIT_TIME_DIVISOR)),
+        );
 
         nextGates[gateName] = { ...g, density, arrival_rate, wait_time };
       });
@@ -53,22 +75,22 @@ export function useSimulation(setStadiumState: React.Dispatch<React.SetStateActi
 
         if (assigned_crew) {
           // Active crew drains the bin 15–30% per tick
-          fill_level = Math.max(0, fill_level - Math.floor(Math.random() * 15) - 15);
+          fill_level = Math.max(
+            0,
+            fill_level - Math.floor(Math.random() * 15) - SIMULATION.BIN_CREW_DRAIN_MIN,
+          );
           if (fill_level === 0) assigned_crew = null; // job complete
         } else {
           // Unattended bins fill faster when adjacent crowd density is high
-          const fillDelta = Math.max(1, Math.floor(b.adjacent_density / 30) + 1);
+          const fillDelta = Math.max(
+            1,
+            Math.floor(b.adjacent_density / SIMULATION.BIN_FILL_DENSITY_DIVISOR) + 1,
+          );
           fill_level = Math.min(100, fill_level + fillDelta);
         }
 
         // Sync adjacent_density from the corresponding gate
-        const gateKey = b.zone.includes('Gate A')
-          ? 'Gate A'
-          : b.zone.includes('Gate B')
-            ? 'Gate B'
-            : b.zone.includes('Gate C')
-              ? 'Gate C'
-              : 'Gate D';
+        const gateKey = zoneToGateKey(b.zone);
 
         nextBins[binId] = {
           ...b,
@@ -82,30 +104,30 @@ export function useSimulation(setStadiumState: React.Dispatch<React.SetStateActi
       const nextConcessions = { ...prev.concessions };
       Object.keys(nextConcessions).forEach((conId) => {
         const c = nextConcessions[conId];
-        const gateKey = c.zone.includes('Gate A')
-          ? 'Gate A'
-          : c.zone.includes('Gate B')
-            ? 'Gate B'
-            : c.zone.includes('Gate C')
-              ? 'Gate C'
-              : 'Gate D';
+        const gateKey = zoneToGateKey(c.zone);
         const density = nextGates[gateKey]?.density ?? 50;
 
         // Queue grows when density is high, shrinks when density is low
         const qDelta = Math.floor(Math.random() * 5) - (density > 60 ? 1 : 3);
-        const queue_length = Math.max(2, Math.min(120, c.queue_length + qDelta));
+        const queue_length = Math.max(2, Math.min(SIMULATION.QUEUE_MAX, c.queue_length + qDelta));
 
         // Wait time: ~35 seconds per fan in queue
-        const wait_time = Math.max(1, Math.floor(queue_length * 0.35));
+        const wait_time = Math.max(1, Math.floor(queue_length * SIMULATION.WAIT_SECONDS_PER_FAN));
 
         // Stock depletes randomly; auto-restock when critically low
         let stock_level = c.stock_level;
         if (Math.random() > 0.7) {
           stock_level = Math.max(10, stock_level - Math.floor(Math.random() * 4) - 1);
         }
-        if (stock_level < 15) stock_level = 95; // restocked
+        if (stock_level < SIMULATION.STOCK_RESTOCK_THRESHOLD)
+          stock_level = SIMULATION.STOCK_RESTOCKED_LEVEL; // restocked
 
-        const status = queue_length > 40 ? 'BUSY' : queue_length === 0 ? 'CLOSED' : 'OPEN';
+        const status =
+          queue_length > SIMULATION.QUEUE_BUSY_THRESHOLD
+            ? 'BUSY'
+            : queue_length === 0
+              ? 'CLOSED'
+              : 'OPEN';
 
         nextConcessions[conId] = { ...c, queue_length, wait_time, stock_level, status };
       });
@@ -117,7 +139,7 @@ export function useSimulation(setStadiumState: React.Dispatch<React.SetStateActi
   // Run the simulation loop at a fixed 5-second interval
   useEffect(() => {
     if (!simulationEnabled) return;
-    const interval = setInterval(triggerSimulationTick, 5000);
+    const interval = setInterval(triggerSimulationTick, SIMULATION.TICK_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [simulationEnabled, triggerSimulationTick]);
 

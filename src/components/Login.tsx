@@ -18,7 +18,7 @@ export default function Login() {
     try {
       await loginWithGoogle();
     } catch (err: unknown) {
-      console.error(err);
+      console.error('[Login] Google sign-in failed:', err);
       setError(err instanceof Error ? err.message : 'Google sign in failed.');
     } finally {
       setLoading(false);
@@ -36,7 +36,7 @@ export default function Login() {
     try {
       await login(email, password);
     } catch (err: unknown) {
-      console.error(err);
+      console.error('[Login] Email/password sign-in failed:', err);
       setError(
         err instanceof Error ? err.message : 'Authentication failed. Please verify credentials.',
       );
@@ -51,7 +51,7 @@ export default function Login() {
     try {
       await login(profileEmail, 'password123', profileName);
     } catch (err: unknown) {
-      console.error(err);
+      console.error('[Login] Quick-access login failed:', err);
       setError('Quick login failed.');
     } finally {
       setLoading(false);
@@ -73,7 +73,7 @@ export default function Login() {
       <div className="w-full max-w-md bg-slate-900/60 border border-slate-800 backdrop-blur-xl p-8 rounded-2xl shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-300">
         {/* Header */}
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 mb-3">
+          <div className="h-12 w-12 rounded-xl bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 mb-3">
             <Shield className="h-6 w-6" />
           </div>
           <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Stadium Guardian AI</h1>
@@ -139,7 +139,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium rounded-lg text-sm transition-all focus:outline-none shadow-lg shadow-emerald-950/40 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium rounded-lg text-sm transition-all focus:outline-none shadow-lg shadow-emerald-950/40 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Authenticating...' : 'Sign In'}
           </button>
