@@ -4,7 +4,7 @@ Stadium Guardian AI (EcoFlow) enforces strict security guidelines at both the ar
 
 ---
 
-## 🔒 Implemented Security Controls
+## Implemented Security Controls
 
 1. **Environment Key Isolation**: All API credentials (Firebase App IDs, Google Maps keys, and Gemini API keys) are restricted to backend routes (`/api/reasoning` and `/api/copilot`) or injected via `.env.local` to prevent leakage to public Git repositories.
 2. **Safe Input Sanitization**: Spectator text alerts and CSV files uploaded to the test bed are parsed client-side through standard validation blocks, converting numbers and strings explicitly, protecting against injection attacks.
@@ -13,7 +13,7 @@ Stadium Guardian AI (EcoFlow) enforces strict security guidelines at both the ar
 
 ---
 
-## 🛡️ Recommended Firestore Security Rules
+## Recommended Firestore Security Rules
 
 Deploy these rules to your Firebase console to restrict data reading and writing inside production environments:
 
@@ -45,11 +45,11 @@ service cloud.firestore {
 
 ---
 
-## ⚠️ Reporting a Vulnerability
+## Reporting a Vulnerability
 
 Please do not open GitHub issues for security vulnerabilities. If you find a security issue in the operations orchestrator, report it directly to:
 
-📧 **stadium-ops-security@fifa.com**
+**stadium-ops-security@fifa.com**
 
 Please include:
 - A detailed description of the vulnerability.

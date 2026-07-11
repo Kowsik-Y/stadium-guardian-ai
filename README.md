@@ -15,7 +15,7 @@ Stadium Guardian AI (EcoFlow) is a production-ready, full-stack stadium operatio
 
 ---
 
-## 📖 Problem Statement
+## Problem Statement
 
 During major stadium matches, stadium volunteers (often young and inexperieced) are stationed on the ground to manage crowd flows, direct spectators, and handle incidents. They face severe friction points:
 - **Crowd Congestion Blindness**: Volunteers cannot see live wait times or gates bottlenecks.
@@ -30,22 +30,22 @@ During major stadium matches, stadium volunteers (often young and inexperieced) 
 
 ---
 
-## ✨ Features Breakdown
+## Features Breakdown
 
 | Feature Module | Description | Actionable Loop |
 |---|---|---|
-| 🏟️ **Live Operations HUD** | Dynamic maps displaying Gates A, B, C, D wait times, risk score, and trash bin fullness levels. | **INPUT**: Sensors tracking densities and garbage loads dynamically. |
-| 🤖 **AI Reasoning Engine** | Server-side Gemini integration forecasting bottleneck spillages and routing marshalling dispatches. | **REASONING**: AI predicts spillage timelines and suggests redirections. |
-| 💬 **Volunteer AI Copilot** | Chat widget translates ground notes and automatically detects dialects (e.g. Moroccan Arabic). | **EXPLAINABLE DECISION**: XAI JSON panel shows reasoning telemetry. |
-| 🏥 **Emergency Escaler** | Scans queries for medical alerts (e.g. "cannot breathe"), escalating to high-priority dispatches. | **ACTION**: EMT teams dispatched, volunteer safety script generated. |
-| ♻️ **Sustainability Grid** | Monitors Smart Trash Bins fill levels, routing sanitation crews (`CREW-DELTA`) before crowd peaks. | **ACTION**: Proactive cleaning routes assigned to prevent overflows. |
-| 📊 **Operations Analytics** | Recharts area and bar graphs mapping crowd relief, alerts status, and Gemini confidence trends. | **METRICS**: Feedback loop validation of operations quality. |
-| 🗂️ **CSV Test Bed** | Drag-and-drop CSV parser validating headers and inputs, overriding telemetry streams. | **TESTING**: Dynamic evaluation of arbitrary gate sensors. |
-| 🌿 **Installable PWA** | Web App Manifest and Service Worker support. Installable on Android and iOS devices. | **OFFLINE**: Offline assets caching for high-density networks. |
+| **Live Operations HUD** | Dynamic maps displaying Gates A, B, C, D wait times, risk score, and trash bin fullness levels. | **INPUT**: Sensors tracking densities and garbage loads dynamically. |
+| **AI Reasoning Engine** | Server-side Gemini integration forecasting bottleneck spillages and routing marshalling dispatches. | **REASONING**: AI predicts spillage timelines and suggests redirections. |
+| **Volunteer AI Copilot** | Chat widget translates ground notes and automatically detects dialects (e.g. Moroccan Arabic). | **EXPLAINABLE DECISION**: XAI JSON panel shows reasoning telemetry. |
+| **Emergency Escaler** | Scans queries for medical alerts (e.g. "cannot breathe"), escalating to high-priority dispatches. | **ACTION**: EMT teams dispatched, volunteer safety script generated. |
+| **Sustainability Grid** | Monitors Smart Trash Bins fill levels, routing sanitation crews (`CREW-DELTA`) before crowd peaks. | **ACTION**: Proactive cleaning routes assigned to prevent overflows. |
+| **Operations Analytics** | Recharts area and bar graphs mapping crowd relief, alerts status, and Gemini confidence trends. | **METRICS**: Feedback loop validation of operations quality. |
+| **CSV Test Bed** | Drag-and-drop CSV parser validating headers and inputs, overriding telemetry streams. | **TESTING**: Dynamic evaluation of arbitrary gate sensors. |
+| **Installable PWA** | Web App Manifest and Service Worker support. Installable on Android and iOS devices. | **OFFLINE**: Offline assets caching for high-density networks. |
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Layer | Technology |
 |---|---|
@@ -63,7 +63,7 @@ During major stadium matches, stadium volunteers (often young and inexperieced) 
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
@@ -115,7 +115,7 @@ tests/
 
 ---
 
-## 🔐 Security & Accessibility (WCAG 2.1 AA)
+## Security & Accessibility (WCAG 2.1 AA)
 
 We enforce standard security and accessibility parameters:
 - **HttpOnly Variables**: Sensitive API keys (`GEMINI_API_KEY`) remain strictly on the server-side Next.js route handlers.
@@ -126,7 +126,7 @@ We enforce standard security and accessibility parameters:
 
 ---
 
-## 🚀 Setup & Installation
+## Setup & Installation
 
 ### 1. Prerequisites
 - Node.js v18 or later
@@ -159,7 +159,7 @@ npm run dev
 
 ---
 
-## 🐳 Containerization & Deployment
+## Containerization & Deployment
 
 Stadium Guardian AI is fully containerized.
 
@@ -182,7 +182,7 @@ gcloud run deploy stadium-guardian-ai \
 
 ---
 
-## 🎯 How This Addresses the Problem Statement
+## How This Addresses the Problem Statement
 
 This section explicitly maps each **Challenge 4: Smart Stadiums & Tournament Operations** requirement to a concrete implementation:
 
@@ -201,7 +201,7 @@ This section explicitly maps each **Challenge 4: Smart Stadiums & Tournament Ope
 
 ---
 
-## 🧠 Context-Aware AI Decision Making
+## Context-Aware AI Decision Making
 
 The AI reasoning engine adapts its responses based on multiple simultaneous contextual signals — it is **not** a static rule engine:
 
@@ -220,7 +220,7 @@ All of these signals are passed as a single telemetry JSON packet to Gemini with
 
 ---
 
-## 🧪 Test Coverage Summary
+## Test Coverage Summary
 
 **47 tests across 8 test files** — run with `npm test` or `npm run test:coverage` for a full HTML coverage report.
 
