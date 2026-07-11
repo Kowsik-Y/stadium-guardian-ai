@@ -280,10 +280,13 @@ export default function Dashboard() {
             {gatesList.map((g) => {
               const risk = g.density > 80 ? 'CRITICAL' : g.density > 55 ? 'WARNING' : 'SAFE';
               return (
-                <div
+                <button
                   key={g.gate}
+                  type="button"
+                  aria-pressed={selectedGate === g.gate}
+                  aria-label={`Select ${g.gate} — ${risk} risk, density ${g.density}%`}
                   onClick={() => setSelectedGate(g.gate)}
-                  className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
+                  className={`w-full text-left p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                     selectedGate === g.gate
                       ? 'bg-slate-800 border-emerald-500'
                       : 'bg-slate-950/40 border-slate-850 hover:border-slate-700'
@@ -318,7 +321,7 @@ export default function Dashboard() {
                       <p className="font-semibold text-slate-300 mt-0.5">{g.wait_time}m</p>
                     </div>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -329,6 +332,7 @@ export default function Dashboard() {
                 Selected: <strong className="text-slate-200">{selectedGate}</strong>
               </span>
               <button
+                type="button"
                 onClick={() => setSelectedGate(null)}
                 className="text-[10px] text-slate-500 hover:text-slate-300 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none"
               >

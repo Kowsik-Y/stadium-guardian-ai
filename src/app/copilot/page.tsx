@@ -162,6 +162,7 @@ export default function Copilot() {
         <div className="p-3 bg-slate-950/40 border-b border-slate-850 flex flex-wrap gap-2">
           {presetQueries.map((preset) => (
             <button
+              type="button"
               key={preset.label}
               onClick={() => handleSendMessage(preset.text)}
               disabled={loading}
@@ -294,6 +295,7 @@ export default function Copilot() {
         {/* Input Bar */}
         <div className="p-4 bg-slate-900 border-t border-slate-800 flex gap-2.5 items-center">
           <button
+            type="button"
             onClick={() => handleSendMessage('My mother cannot breathe and needs a restroom')}
             className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-red-400 hover:bg-slate-850 hover:text-red-300 transition-colors"
             title="Simulate Voice Emergency Alert"
@@ -314,6 +316,7 @@ export default function Copilot() {
           />
 
           <button
+            type="button"
             onClick={() => handleSendMessage(inputText)}
             disabled={!inputText.trim() || loading}
             className="p-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"

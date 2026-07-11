@@ -123,6 +123,7 @@ const IncidentList: React.FC<IncidentListProps> = ({ activeIncidents, resolveInc
 
                 <div className="mt-4 pt-3 border-t border-slate-850 flex gap-2">
                   <button
+                    type="button"
                     onClick={() => resolveIncident(inc.id)}
                     className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none"
                   >

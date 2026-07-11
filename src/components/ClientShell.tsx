@@ -177,6 +177,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
             </div>
           </div>
           <button
+            type="button"
             onClick={() => logout()}
             className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-slate-800 hover:border-red-500/50 hover:bg-red-500/10 text-slate-400 hover:text-red-400 text-xs font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none"
           >
@@ -195,6 +196,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
         <header className="flex h-16 items-center justify-between px-6 bg-slate-900 border-b border-slate-800 z-10">
           {/* Mobile Menu Button */}
           <button
+            type="button"
             ref={mobileMenuButtonRef}
             onClick={() => setMobileMenuOpen(true)}
             className="md:hidden p-2 rounded-lg text-slate-400 hover:bg-slate-800 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none"
@@ -267,6 +269,8 @@ export default function ClientShell({ children }: { children: React.ReactNode })
 
       {/* Mobile Drawer Sidebar */}
       {mobileMenuOpen && (
+        // biome-ignore lint/a11y/noStaticElementInteractions: Backdrop click dismisses modal; keyboard users dismiss via Escape key or Close button inside the modal.
+        // biome-ignore lint/a11y/useKeyWithClickEvents: Backdrop click dismisses modal; keyboard users dismiss via Escape key or Close button inside the modal.
         <div
           className="fixed inset-0 z-50 flex md:hidden bg-slate-950/80 backdrop-blur-sm"
           onClick={(event) => {
@@ -285,6 +289,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
             className="relative flex w-full max-w-xs flex-col bg-slate-900 border-r border-slate-800 p-6 animate-in slide-in-from-left duration-200"
           >
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(false)}
               className="absolute top-4 right-4 p-2 rounded-lg text-slate-400 hover:bg-slate-800 outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none"
               aria-label="Close menu"
@@ -330,6 +335,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => {
                   setMobileMenuOpen(false);
                   logout();

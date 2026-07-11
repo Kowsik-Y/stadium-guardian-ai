@@ -42,6 +42,7 @@ const MapWrapper: React.FC<MapWrapperProps> = ({
             <div className="hidden md:flex rounded-lg bg-slate-950 p-0.5 border border-slate-850 text-[10px] items-center gap-1 font-semibold">
               <span className="px-2 text-slate-500 uppercase text-[8px] font-mono">Route HUD:</span>
               <button
+                type="button"
                 onClick={() => setWayfindingPreset('none')}
                 className={`px-2 py-0.5 rounded transition-all outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none ${
                   wayfindingPreset === 'none'
@@ -52,6 +53,7 @@ const MapWrapper: React.FC<MapWrapperProps> = ({
                 None
               </button>
               <button
+                type="button"
                 onClick={() => setWayfindingPreset('crowd-spill')}
                 className={`px-2 py-0.5 rounded transition-all outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none ${
                   wayfindingPreset === 'crowd-spill'
@@ -62,6 +64,7 @@ const MapWrapper: React.FC<MapWrapperProps> = ({
                 A➔C➔D Redirection
               </button>
               <button
+                type="button"
                 onClick={() => setWayfindingPreset('concourse-b-bypass')}
                 className={`px-2 py-0.5 rounded transition-all outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none ${
                   wayfindingPreset === 'concourse-b-bypass'
@@ -77,6 +80,7 @@ const MapWrapper: React.FC<MapWrapperProps> = ({
 
         <div className="flex rounded-lg bg-slate-950 p-1 border border-slate-850">
           <button
+            type="button"
             onClick={() => setActiveTab('stadium')}
             className={`flex items-center gap-1.5 px-3 py-1 rounded text-[10px] font-bold uppercase transition-colors outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none ${
               activeTab === 'stadium'
@@ -87,6 +91,7 @@ const MapWrapper: React.FC<MapWrapperProps> = ({
             Tactical Map
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('google-maps')}
             className={`flex items-center gap-1.5 px-3 py-1 rounded text-[10px] font-bold uppercase transition-colors outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none ${
               activeTab === 'google-maps'
@@ -162,6 +167,7 @@ const MapWrapper: React.FC<MapWrapperProps> = ({
               />
 
               {/* Gate nodes — each is keyboard-focusable with an accessible title and status label */}
+              {/* biome-ignore lint/a11y/useSemanticElements: SVG <circle> has no HTML semantic equivalent; role=button + tabIndex + onKeyDown provides keyboard access */}
               <circle
                 cx="30"
                 cy="25"
@@ -182,6 +188,7 @@ const MapWrapper: React.FC<MapWrapperProps> = ({
               >
                 <title>Gate A — {stadiumState.gates['Gate A']?.density ?? 0}% density</title>
               </circle>
+              {/* biome-ignore lint/a11y/useSemanticElements: SVG <circle> has no HTML semantic equivalent; role=button + tabIndex + onKeyDown provides keyboard access */}
               <circle
                 cx="70"
                 cy="25"
@@ -202,6 +209,7 @@ const MapWrapper: React.FC<MapWrapperProps> = ({
               >
                 <title>Gate B — {stadiumState.gates['Gate B']?.density ?? 0}% density</title>
               </circle>
+              {/* biome-ignore lint/a11y/useSemanticElements: SVG <circle> has no HTML semantic equivalent; role=button + tabIndex + onKeyDown provides keyboard access */}
               <circle
                 cx="30"
                 cy="75"
@@ -222,6 +230,7 @@ const MapWrapper: React.FC<MapWrapperProps> = ({
               >
                 <title>Gate C — {stadiumState.gates['Gate C']?.density ?? 0}% density</title>
               </circle>
+              {/* biome-ignore lint/a11y/useSemanticElements: SVG <circle> has no HTML semantic equivalent; role=button + tabIndex + onKeyDown provides keyboard access */}
               <circle
                 cx="70"
                 cy="75"

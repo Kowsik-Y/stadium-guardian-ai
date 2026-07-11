@@ -249,6 +249,7 @@ Gate D,30,80,4`;
                 </div>
 
                 <button
+                  type="button"
                   onClick={handleApplyData}
                   disabled={aiAnalyzing}
                   className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-sm font-semibold rounded-lg shadow-lg flex items-center justify-center gap-1.5 transition-all"
@@ -268,6 +269,7 @@ Gate D,30,80,4`;
               </span>
               <div className="flex gap-3">
                 <button
+                  type="button"
                   onClick={() => loadPresetMock(PRESET_NORMAL)}
                   className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 border border-slate-800 hover:border-slate-700 bg-slate-950 text-xs font-medium text-slate-350 rounded-lg hover:text-slate-100 transition-colors"
                 >
@@ -275,6 +277,7 @@ Gate D,30,80,4`;
                   Moderate Baseline Preset
                 </button>
                 <button
+                  type="button"
                   onClick={() => loadPresetMock(PRESET_CRITICAL)}
                   className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 border border-slate-800 hover:border-red-500/30 bg-slate-950 text-xs font-medium text-red-400 rounded-lg hover:bg-red-500/5 transition-colors"
                 >

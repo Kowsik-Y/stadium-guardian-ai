@@ -19,7 +19,7 @@
         "useIterableCallbackReturn": "on"
       },
       "a11y": {
-        "recommended": false
+        "recommended": true
       }
     }
   },

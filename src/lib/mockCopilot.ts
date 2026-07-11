@@ -1,39 +1,68 @@
 import { STADIUM_ZONES } from './types';
 
-/**
- * Deterministic heuristic fallback for the AI Copilot used when the
- * Gemini API key is absent (sandbox / evaluation mode).
- *
- * Processes free-text volunteer input through a priority-ordered cascade:
- * 1. Medical emergency keywords (highest priority — immediate CRITICAL_EMERGENCY)
- * 2. Moroccan Arabic dialect crowd-crush markers
- * 3. Spanish-language crowd confusion near Gate C
- * 4. Smart bin overflow reports (extracts bin ID via regex)
- * 4.5. Concession / food-stock restock queries
- * 5. Standard restroom / navigation queries
- * 6. Default fallback: ROUTINE / STANDARD for everything else
- *
- * Each branch returns a fully structured response matching the Gemini JSON
- * schema so the UI renders identically whether it is using live AI or this
- * sandbox stub.
- *
- * @param inputText - The raw volunteer text message to classify.
- * @returns A structured copilot response object with incident_type, priority,
- *   reasoning, action_plan, translations, and message_for_volunteer.
- */
-export function generateMockCopilot(inputText: string) {
-  const query = inputText.toLowerCase().trim();
+// ─── Response type ────────────────────────────────────────────────────────────
 
-  // Case 1: Medical / Breathing Emergency
-  if (
-    query.includes('breathe') ||
-    query.includes('heart') ||
-    query.includes('medical') ||
-    query.includes('pain') ||
-    query.includes('unconscious') ||
-    query.includes('collapsed')
-  ) {
-    return {
+/**
+ * Structured response shape returned by the AI Copilot — matches the Gemini
+ * JSON schema so the UI renders identically in both live-AI and sandbox modes.
+ */
+interface CopilotResponse {
+  incident_type: string;
+  priority: string;
+  reasoning: string;
+  action_plan: {
+    recommended_action: string;
+    target_zone: string;
+    priority: string;
+  };
+  translations: {
+    en: string;
+    es: string;
+    fr: string;
+    ar: string;
+  };
+  message_for_volunteer: string;
+}
+
+// ─── Classification rule type ─────────────────────────────────────────────────
+
+/**
+ * A single classification rule in the heuristic cascade.
+ *
+ * Rules are evaluated in priority order (index 0 = highest priority). The first
+ * rule whose `matcher` returns true wins and its `build` function is called to
+ * produce the response. This declarative structure makes priority ordering
+ * explicit and keeps each branch independently readable and testable.
+ */
+interface ClassificationRule {
+  /** Unique rule identifier — used in comments and future analytics logging. */
+  id: string;
+  /** Returns true when this rule should fire for the given normalised query. */
+  matcher: (query: string, originalInput: string) => boolean;
+  /** Builds the structured response for this rule. */
+  build: (query: string, originalInput: string) => CopilotResponse;
+}
+
+// ─── Rule table ───────────────────────────────────────────────────────────────
+
+/**
+ * Ordered priority cascade of classification rules.
+ *
+ * Index 0 is evaluated first — a query matching multiple rules (e.g. "collapsed
+ * near gate c") resolves to the highest-priority rule (MEDICAL, not CROWD).
+ */
+const CLASSIFICATION_RULES: ClassificationRule[] = [
+  // ── Rule 1: Medical / Breathing Emergency (highest priority) ───────────────
+  {
+    id: 'MEDICAL_EMERGENCY',
+    matcher: (q) =>
+      q.includes('breathe') ||
+      q.includes('heart') ||
+      q.includes('medical') ||
+      q.includes('pain') ||
+      q.includes('unconscious') ||
+      q.includes('collapsed'),
+    build: () => ({
       incident_type: 'CRITICAL_EMERGENCY',
       priority: 'MEDICAL',
       reasoning:
@@ -52,19 +81,20 @@ export function generateMockCopilot(inputText: string) {
       },
       message_for_volunteer:
         'Priority: MEDICAL. Do not attempt complex movement. Keep the area clear and wait for Medical Response Unit Alpha.',
-    };
-  }
+    }),
+  },
 
-  // Case 2: Moroccan Arabic overcrowding alert / dialect register
-  if (
-    query.includes('عباد بزاف') ||
-    query.includes('مخنق') ||
-    query.includes('طاح') ||
-    query.includes('عياو') ||
-    query.includes('tah') ||
-    query.includes('bezaf')
-  ) {
-    return {
+  // ── Rule 2: Moroccan Arabic overcrowding / crowd-crush dialect markers ─────
+  {
+    id: 'MOROCCAN_ARABIC_CROWD_CRUSH',
+    matcher: (q) =>
+      q.includes('عباد بزاف') ||
+      q.includes('مخنق') ||
+      q.includes('طاح') ||
+      q.includes('عياو') ||
+      q.includes('tah') ||
+      q.includes('bezaf'),
+    build: () => ({
       incident_type: 'CRITICAL_EMERGENCY',
       priority: 'CROWD',
       reasoning:
@@ -83,17 +113,18 @@ export function generateMockCopilot(inputText: string) {
       },
       message_for_volunteer:
         'URGENT CROWD RISK. Turn turnstiles off immediately. Direct spectators away from Gate F towards empty plazas.',
-    };
-  }
+    }),
+  },
 
-  // Case 3: Spanish crowd confusion / gate redirections
-  if (
-    query.includes('spanish') ||
-    query.includes('confundidos') ||
-    query.includes('gate c') ||
-    query.includes('espanol')
-  ) {
-    return {
+  // ── Rule 3: Spanish crowd confusion / gate redirection ─────────────────────
+  {
+    id: 'SPANISH_CROWD_REDIRECT',
+    matcher: (q) =>
+      q.includes('spanish') ||
+      q.includes('confundidos') ||
+      q.includes('gate c') ||
+      q.includes('espanol'),
+    build: () => ({
       incident_type: 'URGENT',
       priority: 'CROWD',
       reasoning:
@@ -112,49 +143,51 @@ export function generateMockCopilot(inputText: string) {
       },
       message_for_volunteer:
         "Please speak calmly. Point towards Gate D and repeat the Spanish phrase: 'Por favor diríjanse a la puerta D'.",
-    };
-  }
+    }),
+  },
 
-  // Case 4: Smart bin overflow / Sustainability
-  if (
-    query.includes('bin') ||
-    query.includes('trash') ||
-    query.includes('garbage') ||
-    query.includes('overflow')
-  ) {
-    // Extract bin ID if present, otherwise default to B-104
-    const binMatch = query.match(/b-\d{3}/i);
-    const binId = binMatch ? binMatch[0].toUpperCase() : 'B-104';
-    const zone = binId === 'B-104' ? STADIUM_ZONES.CONCOURSE_C_WEST : STADIUM_ZONES.CURRENT_SECTOR;
+  // ── Rule 4: Smart bin overflow / sustainability dispatch ───────────────────
+  {
+    id: 'BIN_OVERFLOW',
+    matcher: (q) =>
+      q.includes('bin') || q.includes('trash') || q.includes('garbage') || q.includes('overflow'),
+    build: (q) => {
+      // Extract explicit bin ID (e.g. B-201) or fall back to the default overflow bin
+      const binMatch = q.match(/b-\d{3}/i);
+      const binId = binMatch ? binMatch[0].toUpperCase() : 'B-104';
+      const zone =
+        binId === 'B-104' ? STADIUM_ZONES.CONCOURSE_C_WEST : STADIUM_ZONES.CURRENT_SECTOR;
 
-    return {
-      incident_type: 'ROUTINE',
-      priority: 'SUSTAINABILITY',
-      reasoning: `Smart waste bin ${binId} reported as overflowing. High traffic zones require proactive sanitation dispatch to maintain cleanliness and route safety.`,
-      action_plan: {
-        recommended_action: `Dispatch sanitation crew CREW-DELTA-04 to empty bin ${binId}.`,
-        target_zone: zone,
-        priority: 'LOW',
-      },
-      translations: {
-        en: `Sanitation crew is clearing waste bin ${binId}. Please use alternative bins nearby.`,
-        es: `El personal está limpiando la papelera ${binId}. Por favor use otros contenedores.`,
-        fr: `L'équipe nettoie la poubelle ${binId}. Veuillez utiliser d'autres corbeilles.`,
-        ar: `يجري الآن تفريغ صندوق النفايات ${binId}. يرجى استخدام الصناديق المجاورة.`,
-      },
-      message_for_volunteer: `Sanitation crew CREW-DELTA-04 has been notified and dispatched to ${zone}. No volunteer physical cleanup required.`,
-    };
-  }
+      return {
+        incident_type: 'ROUTINE',
+        priority: 'SUSTAINABILITY',
+        reasoning: `Smart waste bin ${binId} reported as overflowing. High traffic zones require proactive sanitation dispatch to maintain cleanliness and route safety.`,
+        action_plan: {
+          recommended_action: `Dispatch sanitation crew CREW-DELTA-04 to empty bin ${binId}.`,
+          target_zone: zone,
+          priority: 'LOW',
+        },
+        translations: {
+          en: `Sanitation crew is clearing waste bin ${binId}. Please use alternative bins nearby.`,
+          es: `El personal está limpiando la papelera ${binId}. Por favor use otros contenedores.`,
+          fr: `L'équipe nettoie la poubelle ${binId}. Veuillez utiliser d'autres corbeilles.`,
+          ar: `يجري الآن تفريغ صندوق النفايات ${binId}. يرجى استخدام الصناديق المجاورة.`,
+        },
+        message_for_volunteer: `Sanitation crew CREW-DELTA-04 has been notified and dispatched to ${zone}. No volunteer physical cleanup required.`,
+      };
+    },
+  },
 
-  // Case 4.5: Concessions / Snack Stock low
-  if (
-    query.includes('snack') ||
-    query.includes('concession') ||
-    query.includes('food') ||
-    query.includes('drink') ||
-    query.includes('water')
-  ) {
-    return {
+  // ── Rule 4.5: Concession / food stock restock ──────────────────────────────
+  {
+    id: 'CONCESSION_RESTOCK',
+    matcher: (q) =>
+      q.includes('snack') ||
+      q.includes('concession') ||
+      q.includes('food') ||
+      q.includes('drink') ||
+      q.includes('water'),
+    build: () => ({
       incident_type: 'ROUTINE',
       priority: 'SUSTAINABILITY',
       reasoning:
@@ -172,17 +205,15 @@ export function generateMockCopilot(inputText: string) {
       },
       message_for_volunteer:
         'Concession Restock Dispatched: C-CREW-03 is moving snacks to Gate C Concourse. Guide fans to nearby Touchdown Tacos if they query about wait times.',
-    };
-  }
+    }),
+  },
 
-  // Case 5: Normal navigation request
-  if (
-    query.includes('restroom') ||
-    query.includes('toilet') ||
-    query.includes('bathroom') ||
-    query.includes('wc')
-  ) {
-    return {
+  // ── Rule 5: Standard navigation / restroom query ───────────────────────────
+  {
+    id: 'RESTROOM_NAVIGATION',
+    matcher: (q) =>
+      q.includes('restroom') || q.includes('toilet') || q.includes('bathroom') || q.includes('wc'),
+    build: () => ({
       incident_type: 'ROUTINE',
       priority: 'STANDARD',
       reasoning:
@@ -201,26 +232,56 @@ export function generateMockCopilot(inputText: string) {
       },
       message_for_volunteer:
         'Direct the fan to walk down the main concourse corridor and turn left past the burger stand.',
-    };
-  }
+    }),
+  },
+];
 
-  // Default fallback for any query
+// ─── Default fallback ─────────────────────────────────────────────────────────
+
+/** Builds the default ROUTINE/STANDARD response when no rule matches. */
+function buildDefaultResponse(originalInput: string): CopilotResponse {
   return {
     incident_type: 'ROUTINE',
     priority: 'STANDARD',
-    reasoning: `Processed general query: '${inputText}'. Checked for emergencies and found none. General support active.`,
+    reasoning: `Processed general query: '${originalInput}'. Checked for emergencies and found none. General support active.`,
     action_plan: {
       recommended_action: 'Provide general information or search assistance.',
       target_zone: 'General Concourse',
       priority: 'LOW',
     },
     translations: {
-      en: `Understood: "${inputText}". How can I assist you further?`,
-      es: `Entendido: "${inputText}". ¿En qué más puedo ayudarle?`,
-      fr: `Compris : "${inputText}". Comment puis-je vous aider davantage ?`,
-      ar: `مفهوم: "${inputText}". كيف يمكنني مساعدتك أكثر؟`,
+      en: `Understood: "${originalInput}". How can I assist you further?`,
+      es: `Entendido: "${originalInput}". ¿En qué más puedo ayudarle?`,
+      fr: `Compris : "${originalInput}". Comment puis-je vous aider davantage ?`,
+      ar: `مفهوم: "${originalInput}". كيف يمكنني مساعدتك أكثر؟`,
     },
     message_for_volunteer:
       'Offer friendly assistance. If you are unsure of the answer, check the main control dashboard.',
   };
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+/**
+ * Deterministic heuristic fallback for the AI Copilot used when the
+ * Gemini API key is absent (sandbox / evaluation mode).
+ *
+ * Evaluates `CLASSIFICATION_RULES` in priority order and returns the first
+ * match. If no rule fires, returns the default ROUTINE/STANDARD response.
+ * The rule-table architecture makes priority ordering explicit and keeps each
+ * classification branch independently readable and testable.
+ *
+ * @param inputText - The raw volunteer text message to classify.
+ * @returns A structured copilot response matching the Gemini JSON schema.
+ */
+export function generateMockCopilot(inputText: string): CopilotResponse {
+  const query = inputText.toLowerCase().trim();
+
+  for (const rule of CLASSIFICATION_RULES) {
+    if (rule.matcher(query, inputText)) {
+      return rule.build(query, inputText);
+    }
+  }
+
+  return buildDefaultResponse(inputText);
 }
