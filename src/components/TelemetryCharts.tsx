@@ -275,7 +275,7 @@ export default function TelemetryCharts({
               {pieData.map((item) => (
                 <div key={`legend-${item.color}`} className="flex items-center gap-3.5">
                   <span
-                    className="h-3 w-3 rounded-full flex-shrink-0"
+                    className="h-3 w-3 rounded-full shrink-0"
                     style={{ backgroundColor: item.color }}
                   ></span>
                   <span className="text-slate-300">
