@@ -52,9 +52,12 @@ describe('API Route Proxy', () => {
   });
 
   it('should parse bearer token for sandbox volunteers', async () => {
-    let capturedContext: ProxyContext | null = null;
+    // Use a mutable ref object instead of a reassigned `let` variable so that
+    // TypeScript's control-flow narrowing can track the type across the async
+    // callback boundary without collapsing the type to `never`.
+    const captured: { context: ProxyContext | null } = { context: null };
     const handler = withRouteProxy(async (_req, context) => {
-      capturedContext = context;
+      captured.context = context;
       return new Response('ok', { status: 200 });
     });
 
@@ -66,17 +69,18 @@ describe('API Route Proxy', () => {
     });
 
     await handler(req);
-    expect(capturedContext).toBeDefined();
-    expect(capturedContext?.user).toBeDefined();
-    expect(capturedContext?.user?.email).toBe('volunteer.gatec@fifa.com');
-    expect(capturedContext?.user?.role).toBe('Field Volunteer');
-    expect(capturedContext?.user?.gate).toBe('Gate C');
+    expect(captured.context).toBeDefined();
+    expect(captured.context?.user).toBeDefined();
+    expect(captured.context?.user?.email).toBe('volunteer.gatec@fifa.com');
+    expect(captured.context?.user?.role).toBe('Field Volunteer');
+    expect(captured.context?.user?.gate).toBe('Gate C');
   });
 
   it('should parse bearer token for sandbox lead supervisors', async () => {
-    let capturedContext: ProxyContext | null = null;
+    // Mutable ref object — avoids the `let` reassignment / `never` narrowing issue.
+    const captured: { context: ProxyContext | null } = { context: null };
     const handler = withRouteProxy(async (_req, context) => {
-      capturedContext = context;
+      captured.context = context;
       return new Response('ok', { status: 200 });
     });
 
@@ -88,19 +92,20 @@ describe('API Route Proxy', () => {
     });
 
     await handler(req);
-    expect(capturedContext).toBeDefined();
-    expect(capturedContext?.user).toBeDefined();
-    expect(capturedContext?.user?.email).toBe('operations.lead@fifa.com');
-    expect(capturedContext?.user?.role).toBe('Control Room Supervisor');
+    expect(captured.context).toBeDefined();
+    expect(captured.context?.user).toBeDefined();
+    expect(captured.context?.user?.email).toBe('operations.lead@fifa.com');
+    expect(captured.context?.user?.role).toBe('Control Room Supervisor');
   });
 
   it('should not authenticate sandbox tokens when env secrets are absent', async () => {
     delete process.env.SANDBOX_TOKEN_VOLUNTEER;
     delete process.env.SANDBOX_TOKEN_LEAD;
 
-    let capturedContext: ProxyContext | null = null;
+    // Mutable ref object — avoids the `let` reassignment / `never` narrowing issue.
+    const captured: { context: ProxyContext | null } = { context: null };
     const handler = withRouteProxy(async (_req, context) => {
-      capturedContext = context;
+      captured.context = context;
       return new Response('ok', { status: 200 });
     });
 
@@ -112,7 +117,7 @@ describe('API Route Proxy', () => {
     });
 
     await handler(req);
-    expect(capturedContext).toBeDefined();
-    expect(capturedContext?.user).toBeUndefined();
+    expect(captured.context).toBeDefined();
+    expect(captured.context?.user).toBeUndefined();
   });
 });

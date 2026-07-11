@@ -1,3 +1,4 @@
+import type { Firestore } from 'firebase/firestore';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const batchSet = vi.hoisted(() => vi.fn());
@@ -21,7 +22,10 @@ import { seedCollectionBatch, syncStadiumStateBatch } from '@/lib/firestoreSync'
 import type { StadiumState } from '@/lib/types';
 
 describe('Firestore sync batching', () => {
-  const firestoreDb = {};
+  // Cast to Firestore type for strict-mode type-checking. The real Firestore
+  // instance shape is never exercised at runtime because all firebase/firestore
+  // calls (doc, writeBatch) are fully intercepted by the vi.mock above.
+  const firestoreDb = {} as unknown as Firestore;
 
   beforeEach(() => {
     batchSet.mockClear();
