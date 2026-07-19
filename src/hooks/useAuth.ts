@@ -10,14 +10,13 @@ import {
 } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import { auth, isFirebaseEnabled } from '@/lib/firebase';
+import type { User } from '@/lib/types';
 
 /** Authenticated user profile stored in app state. */
-export interface AppUser {
-  name: string;
-  email: string;
-  role: string;
-  gate: string;
-}
+export type AuthState =
+  | { status: 'loading' }
+  | { status: 'unauthenticated' }
+  | { status: 'authenticated'; user: User };
 
 /**
  * Manages authentication state for both Firebase (live mode) and the
@@ -28,32 +27,34 @@ export interface AppUser {
  * evaluators can demo the full app without Firebase credentials.
  */
 export function useAuth() {
-  const [user, setUser] = useState<AppUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [authState, setAuthState] = useState<AuthState>({ status: 'loading' });
 
   // Restore session from Firebase Auth or local-storage on mount
   useEffect(() => {
     if (isFirebaseEnabled && auth) {
       const unsubscribe = onAuthStateChanged(auth, (fbUser: FirebaseUser | null) => {
         if (fbUser) {
-          setUser({
-            name: fbUser.displayName || 'Operations Lead',
-            email: fbUser.email || '',
-            role: 'Control Room Officer',
-            gate: 'All Gates',
+          setAuthState({
+            status: 'authenticated',
+            user: {
+              name: fbUser.displayName || 'Operations Lead',
+              email: fbUser.email || '',
+              role: 'Control Room Officer',
+              gate: 'All Gates',
+            },
           });
         } else {
-          setUser(null);
+          setAuthState({ status: 'unauthenticated' });
         }
-        setLoading(false);
       });
       return unsubscribe;
     } else {
       const cachedUser = localStorage.getItem('guardian_user');
       if (cachedUser) {
-        setUser(JSON.parse(cachedUser));
+        setAuthState({ status: 'authenticated', user: JSON.parse(cachedUser) });
+      } else {
+        setAuthState({ status: 'unauthenticated' });
       }
-      setLoading(false);
     }
   }, []);
 
@@ -73,7 +74,7 @@ export function useAuth() {
         'sustainability.crew@fifa.com': 'Sustainability Crew',
       };
 
-      const mockUser: AppUser = {
+      const mockUser: User = {
         name: isPreset ? nameMapping[email] || 'Volunteer Staff' : mockName,
         email,
         role:
@@ -88,7 +89,7 @@ export function useAuth() {
               ? 'Gate C'
               : 'Gate D',
       };
-      setUser(mockUser);
+      setAuthState({ status: 'authenticated', user: mockUser });
       localStorage.setItem('guardian_user', JSON.stringify(mockUser));
     }
   };
@@ -98,7 +99,7 @@ export function useAuth() {
     if (isFirebaseEnabled && auth) {
       await fbSignOut(auth);
     } else {
-      setUser(null);
+      setAuthState({ status: 'unauthenticated' });
       localStorage.removeItem('guardian_user');
     }
   };
@@ -112,16 +113,19 @@ export function useAuth() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } else {
-      const mockUser: AppUser = {
+      const mockUser: User = {
         name: 'Google Volunteer',
         email: 'google.volunteer@fifa.com',
         role: 'Field Volunteer',
         gate: 'Gate B',
       };
-      setUser(mockUser);
+      setAuthState({ status: 'authenticated', user: mockUser });
       localStorage.setItem('guardian_user', JSON.stringify(mockUser));
     }
   };
 
-  return { user, loading, login, logout, loginWithGoogle };
+  const user = authState.status === 'authenticated' ? authState.user : null;
+  const loading = authState.status === 'loading';
+
+  return { user, loading, authState, login, logout, loginWithGoogle };
 }

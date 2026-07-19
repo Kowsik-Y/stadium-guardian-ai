@@ -234,3 +234,55 @@ export interface CopilotMessage {
     priority: string;
   };
 }
+
+/**
+ * Snapshot type for Gate Density Chart data
+ */
+export interface GateSnapshot {
+  gate: string;
+  density: number;
+  waitTime: number;
+}
+
+/**
+ * Snapshot type for Bin Fill Chart data
+ */
+export interface BinSnapshot {
+  bin: string;
+  fill: number;
+}
+
+/**
+ * Item type for Pie Chart (Incident Command Breakdown)
+ */
+export interface PieItem {
+  name: string;
+  value: number;
+  color: string;
+}
+
+/**
+ * Item type for Confidence Line Chart
+ */
+export interface ConfidenceItem {
+  run: string;
+  confidence: number;
+}
+
+/**
+ * Item type for Concessions Bar Chart
+ */
+export interface ConcessionItem {
+  name: string;
+  stock: number;
+  queue: number;
+  wait: number;
+}
+
+/** Authenticated user profile stored in app state. */
+export interface User {
+  name: string;
+  email: string;
+  role: string;
+  gate: string;
+}

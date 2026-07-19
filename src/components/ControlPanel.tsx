@@ -27,6 +27,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       <button
         type="button"
         onClick={injectCrowdSpike}
+        aria-label="Simulate a crowd spike at Gate C"
         className="px-2.5 py-1.5 rounded bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none"
       >
         Spike Gate C
@@ -34,6 +35,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       <button
         type="button"
         onClick={injectBinOverflow}
+        aria-label="Simulate trash bin overflow at B-104"
         className="px-2.5 py-1.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none"
       >
         Fill Bin B-104
@@ -41,6 +43,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       <button
         type="button"
         onClick={injectMedicalCrisis}
+        aria-label="Simulate incoming medical cases"
         className="px-2.5 py-1.5 rounded bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none"
       >
         Inject Medical Cases

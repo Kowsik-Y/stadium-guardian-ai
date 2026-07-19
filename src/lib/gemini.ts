@@ -21,3 +21,20 @@ export const geminiClient = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_K
 export const geminiModel = geminiClient
   ? geminiClient.getGenerativeModel({ model: 'gemini-1.5-flash' })
   : null;
+
+/**
+ * Shared helper to call the Gemini API and extract a JSON object.
+ */
+export async function generateGeminiJson(systemInstruction: string, promptText: string) {
+  if (!geminiModel) throw new Error('Gemini API is not initialized.');
+
+  const result = await geminiModel.generateContent({
+    contents: [{ role: 'user', parts: [{ text: `${systemInstruction}\n\n${promptText}` }] }],
+    generationConfig: {
+      responseMimeType: 'application/json',
+    },
+  });
+
+  const text = result.response.text();
+  return JSON.parse(text);
+}

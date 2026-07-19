@@ -1,101 +1,25 @@
 'use client';
 
 import { AlertTriangle, Clock, Trash2, Users } from 'lucide-react';
-import { useCallback, useState } from 'react';
 import ControlPanel from '@/components/ControlPanel';
 import IncidentList from '@/components/IncidentList';
 import MapWrapper from '@/components/MapWrapper';
 import { SafeModuleBoundary } from '@/components/SafeModuleBoundary';
 import TelemetryGrids from '@/components/TelemetryGrids';
-import { useApp } from '@/context/AppContext';
-import { useDashboardStats } from '@/hooks/useDashboardStats';
-import type { StadiumState } from '@/lib/types';
+import { useDashboardViewModel } from '@/hooks/useDashboardViewModel';
 
 export default function Dashboard() {
-  const { stadiumState, setStadiumState, incidents, resolveIncident, runAiReasoningEngine } =
-    useApp();
-
-  const [activeTab, setActiveTab] = useState<'stadium' | 'google-maps'>('stadium');
-  const [selectedGate, setSelectedGate] = useState<string | null>(null);
-  const [wayfindingPreset, setWayfindingPreset] = useState<
-    'none' | 'crowd-spill' | 'concourse-b-bypass'
-  >('none');
-
+  const { state, ui, actions } = useDashboardViewModel();
   const {
-    avgDensity,
-    avgWaitTime,
-    maxBinFill,
-    calculatedRiskScore,
+    stadiumState,
     activeIncidents,
     medicalIncidents,
     redirectRoutes,
-  } = useDashboardStats(stadiumState, incidents);
-
-  const gatesList = Object.values(stadiumState.gates);
-  const binsList = Object.values(stadiumState.bins);
-
-  // Scenario Injectors
-  const injectCrowdSpike = useCallback(() => {
-    setStadiumState((prev) => {
-      const nextGates = { ...prev.gates };
-      if (nextGates['Gate C']) {
-        nextGates['Gate C'] = {
-          ...nextGates['Gate C'],
-          density: 91,
-          arrival_rate: 650,
-          wait_time: 26,
-        };
-      }
-      return { ...prev, gates: nextGates };
-    });
-    setTimeout(() => runAiReasoningEngine(), 1000);
-  }, [setStadiumState, runAiReasoningEngine]);
-
-  const injectBinOverflow = useCallback(() => {
-    setStadiumState((prev) => {
-      const nextBins = { ...prev.bins };
-      if (nextBins['B-104']) {
-        nextBins['B-104'] = {
-          ...nextBins['B-104'],
-          fill_level: 95,
-          adjacent_density: 85,
-          assigned_crew: null,
-        };
-      }
-      return { ...prev, bins: nextBins };
-    });
-    setTimeout(() => runAiReasoningEngine(), 1000);
-  }, [setStadiumState, runAiReasoningEngine]);
-
-  const injectMedicalCrisis = useCallback(() => {
-    setStadiumState((prev) => ({
-      ...prev,
-      nearby_medical_cases: prev.nearby_medical_cases + 3,
-    }));
-    setTimeout(() => runAiReasoningEngine(), 1000);
-  }, [setStadiumState, runAiReasoningEngine]);
-
-  const resetSimulationState = useCallback(async () => {
-    try {
-      const res = await fetch('/data/reset-state.json');
-      if (!res.ok) throw new Error(`Failed to load reset state: ${res.status}`);
-      const baseState = (await res.json()) as Omit<StadiumState, 'bins'> & {
-        bins: Record<string, Omit<StadiumState['bins'][string], 'last_emptied'>>;
-      };
-
-      const binsWithTimestamp: StadiumState['bins'] = {};
-      for (const [key, bin] of Object.entries(baseState.bins)) {
-        binsWithTimestamp[key] = { ...bin, last_emptied: new Date().toISOString() };
-      }
-
-      setStadiumState(() => ({
-        ...baseState,
-        bins: binsWithTimestamp,
-      }));
-    } catch (err: unknown) {
-      console.error('resetSimulationState fetch failed:', err);
-    }
-  }, [setStadiumState]);
+    gatesList,
+    binsList,
+    stats,
+  } = state;
+  const { activeTab, selectedGate, wayfindingPreset } = ui;
 
   return (
     <div className="space-y-6">
@@ -112,15 +36,19 @@ export default function Dashboard() {
 
         {/* Dynamic simulation controls */}
         <ControlPanel
-          injectCrowdSpike={injectCrowdSpike}
-          injectBinOverflow={injectBinOverflow}
-          injectMedicalCrisis={injectMedicalCrisis}
-          resetSimulationState={resetSimulationState}
+          injectCrowdSpike={actions.injectCrowdSpike}
+          injectBinOverflow={actions.injectBinOverflow}
+          injectMedicalCrisis={actions.injectMedicalCrisis}
+          resetSimulationState={actions.resetSimulationState}
         />
       </div>
 
       {/* Dynamic Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+        aria-live="polite"
+        aria-atomic="false"
+      >
         {/* Card 1: Risk Score */}
         <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-xl backdrop-blur-md relative overflow-hidden">
           <div className="flex justify-between items-start">
@@ -128,13 +56,15 @@ export default function Dashboard() {
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 Overall Risk Score
               </p>
-              <h3 className="text-3xl font-bold mt-2 text-slate-100">{calculatedRiskScore}%</h3>
+              <h3 className="text-3xl font-bold mt-2 text-slate-100">
+                {stats.calculatedRiskScore}%
+              </h3>
             </div>
             <div
               className={`p-2 rounded-lg ${
-                calculatedRiskScore > 75
+                stats.calculatedRiskScore > 75
                   ? 'bg-red-500/10 text-red-400'
-                  : calculatedRiskScore > 40
+                  : stats.calculatedRiskScore > 40
                     ? 'bg-amber-500/10 text-amber-400'
                     : 'bg-emerald-500/10 text-emerald-400'
               }`}
@@ -145,13 +75,13 @@ export default function Dashboard() {
           <div className="w-full bg-slate-800 h-1.5 rounded-full mt-4">
             <div
               className={`h-1.5 rounded-full transition-all duration-500 ${
-                calculatedRiskScore > 75
+                stats.calculatedRiskScore > 75
                   ? 'bg-red-500'
-                  : calculatedRiskScore > 40
+                  : stats.calculatedRiskScore > 40
                     ? 'bg-amber-500'
                     : 'bg-emerald-500'
               }`}
-              style={{ width: `${calculatedRiskScore}%` }}
+              style={{ width: `${stats.calculatedRiskScore}%` }}
             ></div>
           </div>
         </div>
@@ -163,7 +93,7 @@ export default function Dashboard() {
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 Average Gate Density
               </p>
-              <h3 className="text-3xl font-bold mt-2 text-slate-100">{avgDensity}%</h3>
+              <h3 className="text-3xl font-bold mt-2 text-slate-100">{stats.avgDensity}%</h3>
             </div>
             <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
               <Users className="h-5 w-5" />
@@ -181,7 +111,7 @@ export default function Dashboard() {
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 Average Wait Time
               </p>
-              <h3 className="text-3xl font-bold mt-2 text-slate-100">{avgWaitTime} mins</h3>
+              <h3 className="text-3xl font-bold mt-2 text-slate-100">{stats.avgWaitTime} mins</h3>
             </div>
             <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
               <Clock className="h-5 w-5" />
@@ -197,7 +127,7 @@ export default function Dashboard() {
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 Max Bin Fill Level
               </p>
-              <h3 className="text-3xl font-bold mt-2 text-slate-100">{maxBinFill}%</h3>
+              <h3 className="text-3xl font-bold mt-2 text-slate-100">{stats.maxBinFill}%</h3>
             </div>
             <div className="p-2 rounded-lg bg-teal-500/10 text-teal-400">
               <Trash2 className="h-5 w-5" />
@@ -226,10 +156,10 @@ export default function Dashboard() {
         >
           <MapWrapper
             activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            setSelectedGate={setSelectedGate}
+            setActiveTab={actions.setActiveTab}
+            setSelectedGate={actions.setSelectedGate}
             wayfindingPreset={wayfindingPreset}
-            setWayfindingPreset={setWayfindingPreset}
+            setWayfindingPreset={actions.setWayfindingPreset}
             stadiumState={stadiumState}
             medicalIncidents={medicalIncidents}
             redirectRoutes={redirectRoutes}
@@ -243,7 +173,11 @@ export default function Dashboard() {
             Gate Entry Status
           </h4>
 
-          <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+          <div
+            className="flex-1 overflow-y-auto space-y-3 pr-1"
+            aria-live="polite"
+            aria-relevant="text"
+          >
             {gatesList.map((g) => {
               const risk = g.density > 80 ? 'CRITICAL' : g.density > 55 ? 'WARNING' : 'SAFE';
               return (
@@ -251,8 +185,8 @@ export default function Dashboard() {
                   key={g.gate}
                   type="button"
                   aria-pressed={selectedGate === g.gate}
-                  aria-label={`Select ${g.gate} — ${risk} risk, density ${g.density}%`}
-                  onClick={() => setSelectedGate(g.gate)}
+                  aria-label={`Select ${g.gate} — ${risk} risk, density ${g.density}%, wait time ${g.wait_time} minutes`}
+                  onClick={() => actions.setSelectedGate(g.gate)}
                   className={`w-full text-left p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                     selectedGate === g.gate
                       ? 'bg-slate-800 border-emerald-500'
@@ -294,13 +228,17 @@ export default function Dashboard() {
           </div>
 
           {selectedGate && (
-            <div className="mt-3 pt-3 border-t border-slate-800 flex justify-between items-center text-xs">
+            <div
+              className="mt-3 pt-3 border-t border-slate-800 flex justify-between items-center text-xs"
+              aria-live="polite"
+            >
               <span className="text-slate-400">
                 Selected: <strong className="text-slate-200">{selectedGate}</strong>
               </span>
               <button
                 type="button"
-                onClick={() => setSelectedGate(null)}
+                onClick={() => actions.setSelectedGate(null)}
+                aria-label="Clear selected gate"
                 className="text-[10px] text-slate-500 hover:text-slate-300 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none"
               >
                 Clear Selection
@@ -315,12 +253,12 @@ export default function Dashboard() {
         gatesList={gatesList}
         binsList={binsList}
         selectedGate={selectedGate}
-        setSelectedGate={setSelectedGate}
+        setSelectedGate={actions.setSelectedGate}
         stadiumState={stadiumState}
       />
 
       {/* Incidents Command Feed Room */}
-      <IncidentList activeIncidents={activeIncidents} resolveIncident={resolveIncident} />
+      <IncidentList activeIncidents={activeIncidents} resolveIncident={actions.resolveIncident} />
     </div>
   );
 }

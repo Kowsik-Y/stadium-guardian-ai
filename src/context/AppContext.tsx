@@ -3,15 +3,15 @@
 import type React from 'react';
 import { createContext, useContext } from 'react';
 import { useAiReasoning } from '@/hooks/useAiReasoning';
-import { type AppUser, useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { useFirestoreSync } from '@/hooks/useFirestoreSync';
 import { useSimulation } from '@/hooks/useSimulation';
 import { isFirebaseEnabled } from '@/lib/firebase';
-import type { Incident, StadiumState } from '@/lib/types';
+import type { Incident, StadiumState, User } from '@/lib/types';
 
 /** Shape of the global application context available to all child components. */
 interface AppContextType {
-  user: AppUser | null;
+  user: User | null;
   loading: boolean;
   login: (email: string, password: string, mockName?: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;

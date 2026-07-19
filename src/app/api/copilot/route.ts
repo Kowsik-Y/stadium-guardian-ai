@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { geminiModel } from '@/lib/gemini';
+import { geminiModel, generateGeminiJson } from '@/lib/gemini';
+import { generateMockCopilot } from '@/lib/mockCopilot';
 import { withRouteProxy } from '@/lib/proxy';
 
 const SYSTEM_INSTRUCTION = `You are Stadium Guardian AI, an emergency-aware, multilingual stadium operations assistant.
@@ -36,8 +37,6 @@ Never provide generic answers. Always:
   "message_for_volunteer": "Please calmly guide fans... / Dispatch alerted, guide EMT to the scene..."
 }`;
 
-import { generateMockCopilot } from '@/lib/mockCopilot';
-
 export const POST = withRouteProxy(async (req: Request) => {
   let message = '';
   try {
@@ -49,31 +48,13 @@ export const POST = withRouteProxy(async (req: Request) => {
     }
 
     if (!geminiModel) {
-      // Mock Sandbox response
       const mockData = generateMockCopilot(message);
-      return NextResponse.json({
-        ...mockData,
-        confidence: 93,
-        mode: 'SIMULATION',
-      });
+      return NextResponse.json({ ...mockData, confidence: 93, mode: 'SIMULATION' });
     }
 
-    const model = geminiModel;
-    const promptText = `
-Volunteer Alert Input: "${message}"
+    const promptText = `Volunteer Alert Input: "${message}"\n\nProcess this input and output the structured JSON matching the system instructions.`;
 
-Process this input and output the structured JSON matching the system instructions.
-`;
-
-    const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: `${SYSTEM_INSTRUCTION}\n\n${promptText}` }] }],
-      generationConfig: {
-        responseMimeType: 'application/json',
-      },
-    });
-
-    const text = result.response.text();
-    const parsedData = JSON.parse(text);
+    const parsedData = await generateGeminiJson(SYSTEM_INSTRUCTION, promptText);
 
     return NextResponse.json({
       ...parsedData,
